@@ -1,6 +1,8 @@
 general:
   team-tag: "DSA"
   team-name: "Data Science & Analytics"
+  raise-on-interrupt: true
+  raise-on-escape: true
 commits:
   conventional-commits:
     types:

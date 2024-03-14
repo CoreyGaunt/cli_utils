@@ -11,7 +11,8 @@ also look into this: https://github.com/petereon/beaupy
 setup(
 	name='cli_kit',
 	version='0.1.0',
-	packages=find_namespace_packages(include=['cli_kit', 'cli_kit.*']), # find_
+	packages=find_namespace_packages(include=['cli_kit', 'cli_kit.*']),
+	url="https://github.com/CoreyGaunt/cli_utils",
 	install_requires=[
 		'click',
 		'rich',
