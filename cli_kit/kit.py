@@ -1,9 +1,7 @@
 import yaml
 import click
 import subprocess
-import contextlib
-import io
-import sys
+import re
 from pathlib import Path
 from beaupy import confirm, prompt, select, select_multiple, Config
 from beaupy.spinners import *
@@ -83,6 +81,15 @@ def load_config():
 		exit()
 	return config
 
+def remove_color_indicators(string):
+	# Define a regular expression pattern to match color indicators
+    pattern = r'\[/?[a-zA-Z]+\s*[a-zA-Z]*\]'
+    
+    # Use re.sub() to replace color indicators with an empty string
+    cleaned_text = re.sub(pattern, '', string)
+    
+    return cleaned_text
+
 @click.command("commit-all")
 def commit_all():
 	"""
@@ -102,7 +109,7 @@ def commit_all():
 		cursor_style="bold deep_pink3"
 		)
 	# remove colors from the commit type
-	commit_type = commit_type.split("]")[1].split("[")[1]
+	commit_type = remove_color_indicators(commit_type)
 	cmd1 = "git add ."
 	cmd2 = f"git commit -m '{commit_type}: {prompt('[bold deep_pink3]Enter the commit message[/bold deep_pink3]')}'"
 	cmd3 = "git push"
