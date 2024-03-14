@@ -66,6 +66,15 @@ def load_config():
 				config = yaml.safe_load(stream)
 				Config.raise_on_escape = config["general"]["raise-on-escape"]
 				Config.raise_on_interrupt = config["general"]["raise-on-interrupt"]
+				# Add new keys to the config file
+				config["colors"] = {}
+				config["cursors"] = {}
+				config["colors"]["primary-text"] = 'bold purple'
+				config["colors"]["secondary-text"] = 'bold blue'
+				config["colors"]["prompt-text"] = 'bold deep_pink3'
+				config["colors"]["success-text"] = 'bold green'
+				config["colors"]["error-text"] = 'bold red'
+				config["cursors"]["style"] = '>>>'
 			except yaml.YAMLError as exc:
 				print(exc)
 	except FileNotFoundError:
@@ -80,6 +89,7 @@ def commit_all():
 	This command is used to commit all the changes in the current directory.
 	It also asks for a commit message following the Conventional Commits standard.
 	"""
+	## TODO: Parameterize colors for different messages
 	config = load_config()
 	commit_scopes = []
 	for scope in config["commits"]["conventional-commits"]["types"]:
@@ -91,6 +101,8 @@ def commit_all():
 		cursor=">>>",
 		cursor_style="bold deep_pink3"
 		)
+	# remove colors from the commit type
+	commit_type = commit_type.split("]")[1].split("[")[1]
 	cmd1 = "git add ."
 	cmd2 = f"git commit -m '{commit_type}: {prompt('[bold deep_pink3]Enter the commit message[/bold deep_pink3]')}'"
 	cmd3 = "git push"
