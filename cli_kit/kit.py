@@ -68,11 +68,12 @@ def load_config():
 				config["colors"] = {}
 				config["cursors"] = {}
 				config["colors"]["primary-text"] = 'bold purple'
-				config["colors"]["secondary-text"] = 'bold blue'
+				config["colors"]["secondary-text"] = 'blue'
 				config["colors"]["prompt-text"] = 'bold deep_pink3'
 				config["colors"]["success-text"] = 'bold green'
 				config["colors"]["error-text"] = 'bold red'
 				config["cursors"]["style"] = '>>>'
+				config["cursors"]["color"] = 'blue_violet'
 			except yaml.YAMLError as exc:
 				print(exc)
 	except FileNotFoundError:
@@ -98,20 +99,25 @@ def commit_all():
 	"""
 	## TODO: Parameterize colors for different messages
 	config = load_config()
+	primary_color = config["colors"]["primary-text"]
+	secondary_color = config["colors"]["secondary-text"]
+	prompt_color = config["colors"]["prompt-text"]
+	cursor_style = config["cursors"]["style"]
+	cursor_color = config["cursors"]["color"]
 	commit_scopes = []
 	for scope in config["commits"]["conventional-commits"]["types"]:
-		commit_scopes.append(f"[bold blue]{scope}[/bold blue]")
+		commit_scopes.append(f"[{secondary_color}]{scope}[/{secondary_color}]")
 
-	console.print("Committing All Changes", style="bold purple", highlight=True)
+	console.print("Committing All Changes", style=primary_color, highlight=True)
 	commit_type = select(
 		options=commit_scopes,
-		cursor=">>>",
-		cursor_style="bold deep_pink3"
+		cursor=cursor_style,
+		cursor_style=cursor_color
 		)
 	# remove colors from the commit type
 	commit_type = remove_color_indicators(commit_type)
 	cmd1 = "git add ."
-	cmd2 = f"git commit -m '{commit_type}: {prompt('[bold deep_pink3]Enter the commit message[/bold deep_pink3]')}'"
+	cmd2 = f"git commit -m '{commit_type}: {prompt(f'[{prompt_color}]Enter the commit message[/{prompt_color}]')}'"
 	cmd3 = "git push"
 	subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
 	subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
