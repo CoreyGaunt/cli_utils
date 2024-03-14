@@ -1,8 +1,12 @@
 import yaml
 import click
 import subprocess
+import contextlib
+import io
+import sys
 from pathlib import Path
 from beaupy import confirm, prompt, select, select_multiple, Config
+from beaupy.spinners import *
 from rich.console import Console
 
 console = Console()
@@ -49,14 +53,11 @@ def init():
 		file.write("  plugins-location: ''")
 	console.print("Initialized .kit Directory", style="bold green")
 
-cli.add_command(init)
-
 def load_config():
 	try:
 		if dev_path.exists():
 			file_location = dev_path
 		elif prod_path.exists():
-			print("Found")
 			file_location = prod_path
 		else:
 			raise FileNotFoundError
@@ -84,14 +85,19 @@ def commit_all():
 	for scope in config["commits"]["conventional-commits"]["types"]:
 		commit_scopes.append(scope)
 
-	console.print("Committing All Changes", style="bold green")
-	commit_type = select(commit_scopes)
+	console.print("Committing All Changes", style="bold purple", highlight=True)
+	commit_type = select(
+		options=commit_scopes,
+		cursor=">>>",
+		cursor_style="bold blue"
+		)
 	cmd1 = "git add ."
 	cmd2 = f"git commit -m '{commit_type}: {prompt('Enter the commit message')}'"
 	cmd3 = "git push"
 	subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
 	subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
 	subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
+	console.print("Changes Committed & Pushed To Remote!", style="bold green")
 
 @click.command("dsa-s3-sync")
 def dsa_s3_sync():
@@ -119,5 +125,35 @@ def dsa_s3_sync():
 	else:
 		console.print("Sync Cancelled", style="bold red")
 
+@click.command("branch-new")
+def branch_new():
+	"""
+	This command is used to create a new branch.
+	"""
+	config = load_config()
+	branch_prefixes = []
+	for prefix in config['branches']['branch-prefixes']:
+		branch_prefixes.append(prefix)
+	branch_type = select(branch_prefixes)
+	has_corresponding_ticket = confirm("Does this work pertain to a Linear ticket?")
+	if has_corresponding_ticket:
+		ticket_number = prompt("Enter the ticket number")
+		branch_ticket_ref = f"{config['general']['team-tag']}-{ticket_number}"
+	branch_name = prompt("Enter the branch name")
+	cmd1 = "git checkout main && git pull"
+	if has_corresponding_ticket:
+		cmd2 = f"git checkout -b {branch_type}/{branch_ticket_ref}-{branch_name} && git push --set-upstream origin {branch_type}/{branch_ticket_ref}-{branch_name}"
+	else:
+		cmd2 = f"git checkout -b {branch_type}/{branch_name} && git push --set-upstream origin {branch_type}/{branch_name}"
+	spinner = Spinner(LOADING, "      Pulling Down From Main")
+	spinner.start()
+	subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	spinner.stop()
+	
+	
+
+cli.add_command(init)
 cli.add_command(commit_all)
 cli.add_command(dsa_s3_sync)
+cli.add_command(branch_new)
