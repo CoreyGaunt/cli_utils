@@ -83,21 +83,20 @@ def commit_all():
 	config = load_config()
 	commit_scopes = []
 	for scope in config["commits"]["conventional-commits"]["types"]:
-		commit_scopes.append(scope)
+		commit_scopes.append(f"[bold blue]{scope}[/bold blue]")
 
 	console.print("Committing All Changes", style="bold purple", highlight=True)
 	commit_type = select(
 		options=commit_scopes,
 		cursor=">>>",
-		cursor_style="bold blue"
+		cursor_style="bold deep_pink3"
 		)
 	cmd1 = "git add ."
-	cmd2 = f"git commit -m '{commit_type}: {prompt('Enter the commit message')}'"
+	cmd2 = f"git commit -m '{commit_type}: {prompt('[bold deep_pink3]Enter the commit message[/bold deep_pink3]')}'"
 	cmd3 = "git push"
 	subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
 	subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
 	subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
-	console.print("Changes Committed & Pushed To Remote!", style="bold green")
 
 @click.command("dsa-s3-sync")
 def dsa_s3_sync():
@@ -105,7 +104,7 @@ def dsa_s3_sync():
 	This command is used to sync the local data with the S3 bucket.
 	"""
 	config = load_config()
-	console.print("Syncing Local Data With S3 Bucket", style="bold green")
+	console.print("Syncing Local Data With S3 Bucket", style="bold purple")
 	sources = [
 		f"{config['aws-info']['cd-dag-root']}",
 		f"{config['aws-info']['cd-plugins-root']}",
@@ -116,9 +115,22 @@ def dsa_s3_sync():
 		f"{config['aws-info']['dag-location']}",
 		f"{config['aws-info']['plugins-location']}"
 	]
-	source_selection = select(sources)
-	target_selection = select(targets)
-	confirmation = confirm(f"Are you sure you want to sync {source_selection} with {target_selection}?")
+	source_selection = select(
+		options=sources,
+		cursor=">>>",
+		cursor_style="bold blue"
+		)
+	target_selection = select(
+		options=targets,
+		cursor=">>>",
+		cursor_style="bold blue"
+		)
+	confirmation = confirm(
+		question=f"Are you sure you want to sync {source_selection} with {target_selection}?",
+		yes_text="I am sure, sync it",
+		no_text="Nope! Go back!",
+		cursor=">>>",
+		cursor_style="bold blue")
 	if confirmation:
 		cmd = f"aws s3 sync {source_selection} {target_selection} --exclude '**/.DS_Store' --exclude '**/__pycache__/**' --exclude '.DS_Store'"
 		subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd())
