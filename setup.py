@@ -12,6 +12,8 @@ setup(
 	name='cli_kit',
 	version='0.1.0',
 	packages=find_namespace_packages(include=['cli_kit', 'cli_kit.*']),
+	package_data={"": ["*.yaml"]},
+	author="Corey Gaunt",
 	url="https://github.com/CoreyGaunt/cli_utils",
 	install_requires=[
 		'click',
@@ -21,6 +23,6 @@ setup(
 	],
 	entry_points='''
 		[console_scripts]
-		kit=kit:cli
+		kit=cli_kit.kit:cli
 	''',
 )
