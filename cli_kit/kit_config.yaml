@@ -1,0 +1,27 @@
+general:
+  team-tag: "DSA"
+  team-name: "Data Science & Analytics"
+commits:
+  conventional-commits:
+    types:
+      - Feat
+      - Refactor
+      - Fix
+      - Docs
+      - Style
+      - Test
+      - Chore
+branches:
+  branch-prefixes:
+    - feature
+    - hotfix
+    - chore
+    - docs
+aws-info:
+  bucket-name: "s3://dsa-team-etl-dev"
+  dag-location: "s3://dsa-team-etl-dev/dags/"
+  plugins-location: "s3://dsa-team-etl-dev/dags/plugins/"
+  local_dag_root: "dsa-dags/dags/"
+  local_plugins_root: "dsa-dags/plugins/"
+  cd_dag_root: "dags/"
+  cd_plugins_root: "plugins/"

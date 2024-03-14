@@ -15,7 +15,8 @@ setup(
 	install_requires=[
 		'click',
 		'rich',
-		'beaupy'
+		'beaupy',
+		'pyyaml'
 	],
 	entry_points='''
 		[console_scripts]
