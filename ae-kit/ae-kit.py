@@ -9,8 +9,8 @@ from rich.console import Console
 
 console = Console()
 
-dev_path = Path("./cli_kit/kit_config.yaml")
-prod_path = Path(".kit/kit_config.yaml")
+dev_path = Path("./ae-kit/ae-kit-config.yaml")
+prod_path = Path(".ae-kit/ae-kit-config.yaml")
 
 @click.group()
 def cli():
@@ -25,8 +25,8 @@ def init():
 	This command is used to create a .kit directory in the root of the project.
 	Then it will create a kit_config.yaml file in the .kit directory.
 	"""
-	Path(".kit").mkdir(exist_ok=True)
-	with open(".kit/kit_config.yaml", "w") as file:
+	Path(".ae-kit").mkdir(exist_ok=True)
+	with open(".ae-kit/ae-kit-config.yaml", "w") as file:
 		file.write("general:\n")
 		file.write("  team-tag: \n")
 		file.write("  team-name: \n")
@@ -77,8 +77,8 @@ def load_config():
 			except yaml.YAMLError as exc:
 				print(exc)
 	except FileNotFoundError:
-		console.print("No kit_config.yaml File Found", style="bold red")
-		console.print("Run 'kit init' to create a kit_config.yaml file", style="cyan")
+		console.print("No ae-kit-config.yaml File Found", style="bold red")
+		console.print("Run 'ae-kit init' to create a ae-kit-config.yaml file", style="cyan")
 		exit()
 	return config
 
