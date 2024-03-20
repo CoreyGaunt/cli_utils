@@ -9,6 +9,9 @@ also look into this: https://github.com/petereon/beaupy
 read through this whenever you want to update this file:
 https://click.palletsprojects.com/en/8.1.x/setuptools/
 
+read through here for autocomplete specs:
+https://fig.io/docs/getting-started/first-completion-spec
+
 """
 
 setup(

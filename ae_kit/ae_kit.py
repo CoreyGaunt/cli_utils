@@ -123,7 +123,7 @@ def commit_all():
 	subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
 	subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
 
-@click.command("dsa-s3-sync")
+@click.command("s3-sync")
 def dsa_s3_sync():
 	"""
 	This command is used to sync the local data with the S3 bucket.
