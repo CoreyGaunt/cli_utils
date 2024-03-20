@@ -1,3 +1,6 @@
+# ignore fig-autocomplete directory and all of its files
+fig-autocomplete/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
