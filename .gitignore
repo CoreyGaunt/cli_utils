@@ -1,4 +1,4 @@
-/cli_utils/ae-kit/fig-autocomplete
+ae_kit/fig-autocomplete
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
