@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 """ 
 look into curses for the terminal UI
 
@@ -13,9 +13,9 @@ https://click.palletsprojects.com/en/8.1.x/setuptools/
 
 setup(
 	name='ae-kit',
-	version='0.2.0',
-	packages=find_packages(),
-	include_package_data=True,
+	version='0.1.0',
+	packages=find_namespace_packages(include=['ae_kit', 'ae_kit.*']),
+	package_data={"": ["*.yaml"]},
 	author="Corey Gaunt",
 	url="https://github.com/CoreyGaunt/cli_utils",
 	install_requires=[
@@ -26,6 +26,6 @@ setup(
 	],
 	entry_points='''
 		[console_scripts]
-		ae-kit=ae-kit.ae-kit:cli
+		ae-kit=ae_kit.ae_kit:cli
 	''',
 )

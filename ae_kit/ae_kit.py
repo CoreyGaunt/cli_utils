@@ -9,8 +9,8 @@ from rich.console import Console
 
 console = Console()
 
-dev_path = Path("./ae-kit/ae-kit-config.yaml")
-prod_path = Path(".ae-kit/ae-kit-config.yaml")
+dev_path = Path("./ae_kit/ae-kit-config.yaml")
+prod_path = Path(".ae_kit/ae-kit-config.yaml")
 
 @click.group()
 def cli():
