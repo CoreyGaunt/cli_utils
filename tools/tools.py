@@ -9,8 +9,8 @@ from rich.console import Console
 
 console = Console()
 
-dev_path = Path("./ae_kit/ae-kit-config.yaml")
-prod_path = Path(".ae_kit/ae-kit-config.yaml")
+dev_path = Path("./tools/tools-config.yaml")
+prod_path = Path(".tools/tools-config.yaml")
 
 @click.group()
 def cli():
@@ -25,8 +25,8 @@ def init():
 	This command is used to create a .kit directory in the root of the project.
 	Then it will create a kit_config.yaml file in the .kit directory.
 	"""
-	Path(".ae-kit").mkdir(exist_ok=True)
-	with open(".ae-kit/ae-kit-config.yaml", "w") as file:
+	Path(".tools").mkdir(exist_ok=True)
+	with open(".tools/tools-config.yaml", "w") as file:
 		file.write("general:\n")
 		file.write("  team-tag: \n")
 		file.write("  team-name: \n")
@@ -68,7 +68,7 @@ def load_config():
 				config["colors"] = {}
 				config["cursors"] = {}
 				config["colors"]["primary-text"] = 'bold purple'
-				config["colors"]["secondary-text"] = 'blue'
+				config["colors"]["secondary-text"] = 'bold white'
 				config["colors"]["prompt-text"] = 'bold deep_pink3'
 				config["colors"]["success-text"] = 'bold green'
 				config["colors"]["error-text"] = 'bold red'
@@ -77,8 +77,8 @@ def load_config():
 			except yaml.YAMLError as exc:
 				print(exc)
 	except FileNotFoundError:
-		console.print("No ae-kit-config.yaml File Found", style="bold red")
-		console.print("Run 'ae-kit init' to create a ae-kit-config.yaml file", style="cyan")
+		console.print("No tools-config.yaml File Found", style="bold red")
+		console.print("Run 'tools init' to create a tools-config.yaml file", style="cyan")
 		exit()
 	return config
 

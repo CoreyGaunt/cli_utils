@@ -15,9 +15,9 @@ https://fig.io/docs/getting-started/first-completion-spec
 """
 
 setup(
-	name='ae-kit',
+	name='tools',
 	version='0.1.0',
-	packages=find_namespace_packages(include=['ae_kit', 'ae_kit.*']),
+	packages=find_namespace_packages(include=['tools', 'tools.*']),
 	package_data={"": ["*.yaml"]},
 	author="Corey Gaunt",
 	url="https://github.com/CoreyGaunt/cli_utils",
@@ -29,6 +29,6 @@ setup(
 	],
 	entry_points='''
 		[console_scripts]
-		ae-kit=ae_kit.ae_kit:cli
+		tools=tools.tools:cli
 	''',
 )
