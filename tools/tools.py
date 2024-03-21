@@ -65,15 +65,22 @@ def load_config():
 				Config.raise_on_escape = config["general"]["raise-on-escape"]
 				Config.raise_on_interrupt = config["general"]["raise-on-interrupt"]
 				# Add new keys to the config file
+				'''
+				path_color=$'\e[38;2;35;75;255m' # example rgb color
+				user_color=$'\e[38;2;146;9;238m' # example rgb color
+				branch_color=$'\e[38;2;254;43;7m' # example rgb color
+				git_ref_color=$'\e[38;2;126;254;238m' # example rgb color
+				status_color=$'\e[38;2;0;171;0m' # example rgb color
+				'''
 				config["colors"] = {}
 				config["cursors"] = {}
-				config["colors"]["primary-text"] = 'bold purple'
+				config["colors"]["primary-text"] = 'bold rgb(35,75,255)'
 				config["colors"]["secondary-text"] = 'bold white'
-				config["colors"]["prompt-text"] = 'bold deep_pink3'
+				config["colors"]["prompt-text"] = 'bold rgb(146,9,238)'
 				config["colors"]["success-text"] = 'bold green'
 				config["colors"]["error-text"] = 'bold red'
-				config["cursors"]["style"] = '>>>'
-				config["cursors"]["color"] = 'blue_violet'
+				config["cursors"]["style"] = '󰶻'
+				config["cursors"]["color"] = 'rgb(126,254,238)'
 			except yaml.YAMLError as exc:
 				print(exc)
 	except FileNotFoundError:
