@@ -57,8 +57,11 @@ light_white_back=$'\e[107m'
 # Custom colors
 # REF: https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
 # orange_yellow=$'\e[38;5;128m' # example 8-bit color
-orange_pantone=$'\e[38;2;242;100;25m' # example rgb color
-hunyadi_yellow=$'\e[38;2;246;174;45m' # example rgb color
+path_color=$'\e[38;2;35;75;255m' # example rgb color
+user_color=$'\e[38;2;146;9;238m' # example rgb color
+branch_color=$'\e[38;2;254;43;7m' # example rgb color
+git_ref_color=$'\e[38;2;126;254;238m' # example rgb color
+status_color=$'\e[38;2;0;171;0m' # example rgb color
 # ...
 
 # Flags
@@ -111,13 +114,13 @@ HEADLINE_TRUNC_PREFIX='...' # shown where <path> or <branch> is truncated, consi
 # Info styles
 HEADLINE_STYLE_DEFAULT='' # style applied to entire info line
 HEADLINE_STYLE_JOINT=$light_black
-HEADLINE_STYLE_USER=$bold$orange_pantone
-HEADLINE_STYLE_HOST=$bold$hunyadi_yellow
-HEADLINE_STYLE_PATH=$bold$cyan
-HEADLINE_STYLE_BRANCH_PREFIX=$bold$magenta
-HEADLINE_STYLE_BRANCH=$bold$green
-HEADLINE_STYLE_BRANCH_PREFIX=$bold$magenta
-HEADLINE_STYLE_STATUS=$bold$magenta
+HEADLINE_STYLE_USER=$bold$user_color
+# HEADLINE_STYLE_HOST=$bold$hunyadi_yellow
+HEADLINE_STYLE_PATH=$bold$path_color
+HEADLINE_STYLE_BRANCH_PREFIX=$bold$git_ref_color
+HEADLINE_STYLE_BRANCH=$bold$branch_color
+HEADLINE_STYLE_BRANCH_PREFIX=$bold$git_ref_color
+HEADLINE_STYLE_STATUS=$bold$status_color
 
 # Info options
 HEADLINE_INFO_MODE=precmd # precmd|prompt (whether info line is in PROMPT or printed by precmd)
