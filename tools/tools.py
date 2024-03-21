@@ -74,9 +74,9 @@ def load_config():
 				'''
 				config["colors"] = {}
 				config["cursors"] = {}
-				config["colors"]["primary-text"] = 'bold rgb(35,75,255)'
+				config["colors"]["primary-text"] = 'bold rgb(146,9,238)'
 				config["colors"]["secondary-text"] = 'bold white'
-				config["colors"]["prompt-text"] = 'bold rgb(146,9,238)'
+				config["colors"]["prompt-text"] = 'bold rgb(35,75,255)'
 				config["colors"]["success-text"] = 'bold green'
 				config["colors"]["error-text"] = 'bold red'
 				config["cursors"]["style"] = '󰶻'
@@ -136,7 +136,12 @@ def dsa_s3_sync():
 	This command is used to sync the local data with the S3 bucket.
 	"""
 	config = load_config()
-	console.print("Syncing Local Data With S3 Bucket", style="bold purple")
+	primary_color = config["colors"]["primary-text"]
+	secondary_color = config["colors"]["secondary-text"]
+	prompt_color = config["colors"]["prompt-text"]
+	cursor_style = config["cursors"]["style"]
+	cursor_color = config["cursors"]["color"]
+	console.print("Syncing Local Data With S3 Bucket", style=primary_color, highlight=True)
 	sources = [
 		f"{config['aws-info']['cd-dag-root']}",
 		f"{config['aws-info']['cd-plugins-root']}",
@@ -149,20 +154,20 @@ def dsa_s3_sync():
 	]
 	source_selection = select(
 		options=sources,
-		cursor=">>>",
-		cursor_style="bold blue"
+		cursor=cursor_style,
+		cursor_style=cursor_color
 		)
 	target_selection = select(
 		options=targets,
-		cursor=">>>",
-		cursor_style="bold blue"
+		cursor=cursor_style,
+		cursor_style=cursor_color
 		)
 	confirmation = confirm(
-		question=f"Are you sure you want to sync {source_selection} with {target_selection}?",
+		question=f"[{prompt_color}]Are you sure you want to sync {source_selection} with {target_selection}?[/{prompt_color}]",
 		yes_text="I am sure, sync it",
 		no_text="Nope! Go back!",
-		cursor=">>>",
-		cursor_style="bold blue")
+		cursor=cursor_style,
+		cursor_style=cursor_color)
 	if confirmation:
 		cmd = f"aws s3 sync {source_selection} {target_selection} --exclude '**/.DS_Store' --exclude '**/__pycache__/**' --exclude '.DS_Store'"
 		subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd())
@@ -175,15 +180,31 @@ def branch_new():
 	This command is used to create a new branch.
 	"""
 	config = load_config()
+	primary_color = config["colors"]["primary-text"]
+	secondary_color = config["colors"]["secondary-text"]
+	prompt_color = config["colors"]["prompt-text"]
+	cursor_style = config["cursors"]["style"]
+	cursor_color = config["cursors"]["color"]
+	console.print("Creating a New Branch", style=primary_color, highlight=True)
 	branch_prefixes = []
 	for prefix in config['branches']['branch-prefixes']:
 		branch_prefixes.append(prefix)
-	branch_type = select(branch_prefixes)
-	has_corresponding_ticket = confirm("Does this work pertain to a Linear ticket?")
+	branch_type = select(
+		options=branch_prefixes,
+		cursor=cursor_style,
+		cursor_style=cursor_color
+		)
+	has_corresponding_ticket = confirm(
+		question=f"[{prompt_color}]Does this branch have a corresponding Linear ticket?[/{prompt_color}]",
+		cursor=cursor_style,
+		cursor_style=cursor_color
+		)
 	if has_corresponding_ticket:
-		ticket_number = prompt("Enter the ticket number")
+		ticket_number = prompt(f"[{prompt_color}]Enter the ticket number[/{prompt_color}]")
+		ticket_number = remove_color_indicators(ticket_number)
 		branch_ticket_ref = f"{config['general']['team-tag']}-{ticket_number}"
-	branch_name = prompt("Enter the branch name")
+	branch_name = prompt(f"[{prompt_color}]Enter the branch name[/{prompt_color}]")
+	branch_name = remove_color_indicators(branch_name)
 	cmd1 = "git checkout main && git pull"
 	if has_corresponding_ticket:
 		cmd2 = f"git checkout -b {branch_type}/{branch_ticket_ref}-{branch_name} && git push --set-upstream origin {branch_type}/{branch_ticket_ref}-{branch_name}"
