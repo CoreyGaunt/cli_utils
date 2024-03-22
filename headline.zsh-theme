@@ -57,11 +57,12 @@ light_white_back=$'\e[107m'
 # Custom colors
 # REF: https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
 # orange_yellow=$'\e[38;5;128m' # example 8-bit color
-path_color=$'\e[38;2;35;75;255m' # example rgb color
-user_color=$'\e[38;2;146;9;238m' # example rgb color
-branch_color=$'\e[38;2;254;43;7m' # example rgb color
-git_ref_color=$'\e[38;2;126;254;238m' # example rgb color
-status_color=$'\e[38;2;0;171;0m' # example rgb color
+path_color=$'\e[38;2;35;75;255m'
+user_color=$'\e[38;2;146;9;238m'
+branch_color=$'\e[38;2;254;43;7m'
+git_ref_color=$'\e[38;2;126;254;238m'
+status_color=$'\e[38;2;0;171;0m'
+prompt_color=$'\e[38;2;231;20;122m'
 # ...
 
 # Flags
@@ -164,7 +165,7 @@ HEADLINE_DO_GIT_STATUS_OMIT_ONE=true # set "true" to omit the status number when
 
 # Prompt
 # HEADLINE_PROMPT='   󰘍 ' # consider "%#"
-HEADLINE_PROMPT=$'%{$HEADLINE_STYLE_USER%}%{%}󰘍 '%{$yellow%}''
+HEADLINE_PROMPT=$'%{$HEADLINE_STYLE_USER%}%{%}󰘍 '%{$prompt_color%}''
 HEADLINE_RPROMPT=''
 
 # Clock (prepends to RPROMPT)
