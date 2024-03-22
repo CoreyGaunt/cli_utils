@@ -131,7 +131,7 @@ HEADLINE_INFO_MODE=precmd # precmd|prompt (whether info line is in PROMPT or pri
 HEADLINE_LINE_MODE=on # on|auto|off (whether to print the line above the prompt)
 
 # Separator character
-HEADLINE_LINE_CHAR='_' # repeated for line above information
+HEADLINE_LINE_CHAR='=' # repeated for line above information
 
 # Separator styles
 HEADLINE_STYLE_JOINT_LINE=$HEADLINE_STYLE_JOINT
@@ -163,7 +163,8 @@ HEADLINE_DO_GIT_STATUS_COUNTS=true # set "true" to show count of each status
 HEADLINE_DO_GIT_STATUS_OMIT_ONE=true # set "true" to omit the status number when it is 1
 
 # Prompt
-HEADLINE_PROMPT='󰶻 ' # consider "%#"
+# HEADLINE_PROMPT='   󰘍 ' # consider "%#"
+HEADLINE_PROMPT=$'%{$HEADLINE_STYLE_USER%}%{%}󰘍 '%{$yellow%}''
 HEADLINE_RPROMPT=''
 
 # Clock (prepends to RPROMPT)
@@ -487,6 +488,7 @@ headline_precmd() {
   fi
 
   # Separator line
+  echo ""
   _HEADLINE_LINE_OUTPUT="$_HEADLINE_LINE_LEFT$_HEADLINE_LINE_RIGHT$reset"
   if [[ $HEADLINE_LINE_MODE == 'on' || ($HEADLINE_LINE_MODE == 'auto' && $_HEADLINE_DO_SEP == 'true' ) ]]; then
     print -rP $_HEADLINE_LINE_OUTPUT
@@ -504,12 +506,32 @@ headline_precmd() {
     PROMPT='$(print -rP $_HEADLINE_INFO_OUTPUT; print -rP $HEADLINE_PROMPT)'
   fi
 
+#     # Separator line
+#   _HEADLINE_LINE_OUTPUT="$_HEADLINE_LINE_LEFT$_HEADLINE_LINE_RIGHT$reset"
+#   if [[ $HEADLINE_LINE_MODE == 'on' || ($HEADLINE_LINE_MODE == 'auto' && $_HEADLINE_DO_SEP == 'true' ) ]]; then
+#     print -rP $_HEADLINE_LINE_OUTPUT
+#   fi
+#   _HEADLINE_DO_SEP='true'
+
   # Right prompt
   if [[ $HEADLINE_DO_CLOCK == 'true' ]]; then
     RPROMPT='%{$HEADLINE_STYLE_CLOCK%}$(date +$HEADLINE_CLOCK_FORMAT)%{$reset%}$HEADLINE_RPROMPT'
   else
     RPROMPT=$HEADLINE_RPROMPT
   fi
+}
+
+add-zsh-hook preexec headline_preexec
+headline_preexec()
+{
+  echo -ne "\e[0m"
+  echo ""
+}
+
+add-zsh-hook zshexit headline_zshexit
+headline_zshexit()
+{
+  echo ""
 }
 
 # Create a part of the prompt
