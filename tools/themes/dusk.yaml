@@ -1,0 +1,21 @@
+name: "dusk"
+version: 0.1.0
+color_pallette:
+  user_color: "bold rgb(146,9,238)"
+  path_color: "bold rgb(35,75,255)"
+  branch_color: "bold rgb(254,43,7)"
+  git_ref_color: "bold rgb(126,254,238)"
+  status_color: "bold rgb(0,171,0)"
+  prompt_color: "bold rgb(231,20,122)"
+formatting_aliases:
+  reset: "\e[0m"
+  bold: "\e[1m"
+  faint: "\e[2m"
+  italic: "\e[3m"
+  underline: "\e[4m"
+  invert: "\e[7m"
+icons:
+  user_icon: "󰔁 "
+  path_icon: " "
+  branch_icon: "  "
+  prompt_icon: "󰘍 "

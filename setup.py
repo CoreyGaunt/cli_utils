@@ -1,4 +1,4 @@
-from setuptools import setup, find_namespace_packages
+from setuptools import setup, find_packages
 """ 
 look into curses for the terminal UI
 
@@ -17,7 +17,7 @@ https://fig.io/docs/getting-started/first-completion-spec
 setup(
 	name='tools',
 	version='0.1.0',
-	packages=find_namespace_packages(include=['tools', 'tools.*']),
+	packages=find_packages(include=['tools', 'tools.*']),
 	package_data={"": ["*.yaml"]},
 	author="Corey Gaunt",
 	url="https://github.com/CoreyGaunt/cli_utils",

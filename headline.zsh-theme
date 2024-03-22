@@ -6,63 +6,66 @@
 # To install, source this file from your .zshrc file
 # Customization variables begin around line 70
 
+source ~/.zprofile
 
+theme='dusk'
 
 # Formatting aliases
 # (add more if you need)
-reset=$'\e[0m'
-bold=$'\e[1m'
-faint=$'\e[2m'
-italic=$'\e[3m'
-underline=$'\e[4m'
-invert=$'\e[7m'
+reset=$(yq e '.formatting_aliases.reset' $zsh_pallettes_dir$theme.yaml)
+bold=$(yq e '.formatting_aliases.bold' $zsh_pallettes_dir$theme.yaml)
+faint=$(yq e '.formatting_aliases.faint' $zsh_pallettes_dir$theme.yaml)
+italic=$(yq e '.formatting_aliases.italic' $zsh_pallettes_dir$theme.yaml)
+underline=$(yq e '.formatting_aliases.underline' $zsh_pallettes_dir$theme.yaml)
+invert=$(yq e '.formatting_aliases.invert' $zsh_pallettes_dir$theme.yaml)
 # ...
 
 # Foreground color aliases
-black=$'\e[30m'
-red=$'\e[31m'
-green=$'\e[32m'
-yellow=$'\e[33m'
-blue=$'\e[34m'
-magenta=$'\e[35m'
-cyan=$'\e[36m'
-white=$'\e[37m'
-light_black=$'\e[90m'
-light_red=$'\e[91m'
-light_green=$'\e[92m'
-light_yellow=$'\e[93m'
-light_blue=$'\e[94m'
-light_magenta=$'\e[95m'
-light_cyan=$'\e[96m'
-light_white=$'\e[97m'
+# black=$'\e[30m'
+# red=$'\e[31m'
+# green=$'\e[32m'
+# yellow=$'\e[33m'
+# blue=$'\e[34m'
+# magenta=$'\e[35m'
+# cyan=$'\e[36m'
+# white=$'\e[37m'
+# light_black=$'\e[90m'
+# light_red=$'\e[91m'
+# light_green=$'\e[92m'
+# light_yellow=$'\e[93m'
+# light_blue=$'\e[94m'
+# light_magenta=$'\e[95m'
+# light_cyan=$'\e[96m'
+# light_white=$'\e[97m'
 
 # Background color aliases
-black_back=$'\e[40m'
-red_back=$'\e[41m'
-green_back=$'\e[42m'
-yellow_back=$'\e[43m'
-blue_back=$'\e[44m'
-magenta_back=$'\e[45m'
-cyan_back=$'\e[46m'
-white_back=$'\e[47m'
-light_black_back=$'\e[100m'
-light_red_back=$'\e[101m'
-light_green_back=$'\e[102m'
-light_yellow_back=$'\e[103m'
-light_blue_back=$'\e[104m'
-light_magenta_back=$'\e[105m'
-light_cyan_back=$'\e[106m'
-light_white_back=$'\e[107m'
+# black_back=$'\e[40m'
+# red_back=$'\e[41m'
+# green_back=$'\e[42m'
+# yellow_back=$'\e[43m'
+# blue_back=$'\e[44m'
+# magenta_back=$'\e[45m'
+# cyan_back=$'\e[46m'
+# white_back=$'\e[47m'
+# light_black_back=$'\e[100m'
+# light_red_back=$'\e[101m'
+# light_green_back=$'\e[102m'
+# light_yellow_back=$'\e[103m'
+# light_blue_back=$'\e[104m'
+# light_magenta_back=$'\e[105m'
+# light_cyan_back=$'\e[106m'
+# light_white_back=$'\e[107m'
 
 # Custom colors
 # REF: https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
 # orange_yellow=$'\e[38;5;128m' # example 8-bit color
-path_color=$'\e[38;2;35;75;255m'
-user_color=$'\e[38;2;146;9;238m'
-branch_color=$'\e[38;2;254;43;7m'
-git_ref_color=$'\e[38;2;126;254;238m'
-status_color=$'\e[38;2;0;171;0m'
-prompt_color=$'\e[38;2;231;20;122m'
+
+path_color=$(yq e '.color_pallette.path_color' $zsh_pallettes_dir$theme.yaml)
+user_color=$(yq e '.color_pallette.user_color' $zsh_pallettes_dir$theme.yaml)
+branch_color=$(yq e '.color_pallette.branch_color' $zsh_pallettes_dir$theme.yaml)
+git_ref_color=$(yq e '.color_pallette.git_ref_color' $zsh_pallettes_dir$theme.yaml)
+status_color=$(yq e '.color_pallette.status_color' $zsh_pallettes_dir$theme.yaml)
+prompt_color=$(yq e '.color_pallette.prompt_color' $zsh_pallettes_dir$theme.yaml)
 # ...
 
 # Flags
@@ -87,10 +90,11 @@ HEADLINE_GIT_SUFFIX_CMD=')'
 HEADLINE_GIT_STATUS_CMD='headline_git_status'
 
 # Info symbols (optional)
-HEADLINE_USER_PREFIX='󰔁 ' # consider " "
-HEADLINE_HOST_PREFIX='󰦉 ' # consider " "
-HEADLINE_PATH_PREFIX=' ' # consider " "
-HEADLINE_BRANCH_PREFIX='  ' # consider " "
+HEADLINE_USER_PREFIX=$(yq e '.icons.user_icon' $zsh_pallettes_dir$theme.yaml)
+# HEADLINE_HOST_PREFIX='󰦉 ' # consider " "
+HEADLINE_PATH_PREFIX=$(yq e '.icons.path_icon' $zsh_pallettes_dir$theme.yaml)
+HEADLINE_BRANCH_PREFIX=$(yq e '.icons.branch_icon' $zsh_pallettes_dir$theme.yaml)
+HEADLINE_PROMPT_PREFIX=$(yq e '.icons.prompt_icon' $zsh_pallettes_dir$theme.yaml)
 
 # Info joints
 HEADLINE_USER_BEGIN=''
@@ -165,7 +169,7 @@ HEADLINE_DO_GIT_STATUS_OMIT_ONE=true # set "true" to omit the status number when
 
 # Prompt
 # HEADLINE_PROMPT='   󰘍 ' # consider "%#"
-HEADLINE_PROMPT=$'%{$HEADLINE_STYLE_USER%}%{%}󰘍 '%{$prompt_color%}''
+HEADLINE_PROMPT=$'%{$HEADLINE_STYLE_USER%}%{%}$HEADLINE_PROMPT_PREFIX'%{$prompt_color%}''
 HEADLINE_RPROMPT=''
 
 # Clock (prepends to RPROMPT)
@@ -337,7 +341,7 @@ headline_git_status() {
     if (( ${totals[$key]} > 0 )); then
       if (( ${#HEADLINE_STATUS_TO_STATUS} && ${#status_str} )); then # not first iteration
         local style_joint="$reset$HEADLINE_STYLE_DEFAULT$HEADLINE_STYLE_JOINT"
-        local style_status="$resetHEADLINE_STYLE_DEFAULT$HEADLINE_STYLE_STATUS"
+        local style_status="$reset$HEADLINE_STYLE_DEFAULT$HEADLINE_STYLE_STATUS"
         status_str="$status_str%{$style_joint%}$HEADLINE_STATUS_TO_STATUS%{$style_status%}"
       fi
       eval prefix="\$HEADLINE_GIT_${key}"
@@ -525,7 +529,7 @@ headline_precmd() {
 add-zsh-hook preexec headline_preexec
 headline_preexec()
 {
-  echo -ne "\e[0m"
+  echo -ne $reset
   echo ""
 }
 

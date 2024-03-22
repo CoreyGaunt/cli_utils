@@ -27,3 +27,5 @@ aws-info:
   local-plugins-root: "dsa-dags/plugins/"
   cd-dag-root: "dags/"
   cd-plugins-root: "plugins/"
+theme:
+  name: "dusk"
