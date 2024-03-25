@@ -223,7 +223,8 @@ def gum_commit():
 			files += f"'{file.strip()}' "
 		gum_tracked_files_filter = f"gum filter {files} --text.foreground '{secondary_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
 			--header 'Which File(s) Would You Like To Add?' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
-			--cursor-text.foreground '{prompt_color}' --match.foreground '{tertiary_color}' --height 10 --no-limit"
+			--cursor-text.foreground '{prompt_color}' --match.foreground '{tertiary_color}' --height 10 --no-limit\
+			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
 		tracked_files_output = subprocess.run(gum_tracked_files_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 		tracked_files = tracked_files_output.stdout.strip()
 		tracked_files = [file[2:] for file in tracked_files.split("\n") if file]
