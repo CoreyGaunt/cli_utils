@@ -1,0 +1,28 @@
+name: "matrix"
+version: 0.1.0
+color_pallette:
+  user_color: "bold rgb(0,102,0)"
+  hex_user_color: "#006600"
+  path_color: "bold rgb(0,153,0)"
+  hex_path_color: "#009900"
+  branch_color: "bold rgb(102,0,153)"
+  hex_branch_color: "#660099"
+  git_ref_color: "bold rgb(0,153,51)"
+  hex_git_ref_color: "#009933"
+  status_color: "bold rgb(0,102,51)"
+  hex_status_color: "#006633"
+  prompt_color: "bold rgb(51,153,0)"
+  hex_prompt_color: "#339900"
+formatting_aliases:
+  reset: "\e[0m"
+  bold: "\e[1m"
+  faint: "\e[2m"
+  italic: "\e[3m"
+  underline: "\e[4m"
+  invert: "\e[7m"
+icons:
+  user_icon: "󰔁 "
+  path_icon: " "
+  branch_icon: "  "
+  prompt_icon: "󰘍 "
+  gum_filter_icon: "󱍿 "

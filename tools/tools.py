@@ -2,6 +2,7 @@ import yaml
 import click
 import subprocess
 import re
+import string
 from pathlib import Path
 from beaupy import confirm, prompt, select, select_multiple, Config
 from beaupy.spinners import *
@@ -132,40 +133,6 @@ def remove_color_indicators(string):
 	
 	return cleaned_text
 
-@click.command("gum-test")
-def gum_test():
-	print("What is your favorite language?")
-	cmd = "gum choose 'Python' 'JavaScript' 'Java' 'C++' 'C#' --item.foreground '#9209ee' --selected.foreground '#7efeee' --cursor.foreground '#7efeee'"
-	subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd())
-
-@click.command("commit-all")
-def commit_all():
-	"""
-	This command is used to commit all the changes in the current directory.
-	It also asks for a commit message following the Conventional Commits standard.
-	"""
-	## TODO: Parameterize colors for different messages
-	config = load_config()
-	primary_color, secondary_color, _, _, prompt_color, cursor_style, cursor_color, _ = load_theme(config)
-	commit_scopes = []
-	for scope in config["commits"]["conventional-commits"]["types"]:
-		commit_scopes.append(f"[{secondary_color}]{scope}[/{secondary_color}]")
-
-	console.print("Committing All Changes", style=primary_color, highlight=True)
-	commit_type = select(
-		options=commit_scopes,
-		cursor=cursor_style,
-		cursor_style=cursor_color
-		)
-	# remove colors from the commit type
-	commit_type = remove_color_indicators(commit_type)
-	cmd1 = "git add ."
-	cmd2 = f"git commit -m '{commit_type}: {prompt(f'[{prompt_color}]Enter the commit message[/{prompt_color}]')}'"
-	cmd3 = "git push"
-	subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
-	subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
-	subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
-
 def commit_type_and_message():
 	config = load_config()
 	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
@@ -187,8 +154,8 @@ def commit_type_and_message():
 
 	return commit_type, commit_message
 
-@click.command("gum-commit")
-def gum_commit():
+@click.command("commit")
+def commit():
 	"""
 	This command is used to commit all the changes in the current directory.
 	It also asks for a commit message following the Conventional Commits standard.
@@ -238,6 +205,7 @@ def gum_commit():
 		subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
 
+# TODO: Refactor using Gum commands
 @click.command("s3-sync")
 def dsa_s3_sync():
 	"""
@@ -284,6 +252,7 @@ def dsa_s3_sync():
 	else:
 		console.print("Sync Cancelled", style="bold red")
 
+# TODO: Refactor using Gum commands
 @click.command("branch-new")
 def branch_new():
 	"""
@@ -324,11 +293,38 @@ def branch_new():
 	subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	spinner.stop()
 	
+@click.command("pr-create")
+def pr_create():
+	config = load_config()
+	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
+	pr_prefix = ""
+	for prefix in config['branches']['branch-prefixes']:
+		pr_prefix += f"'{prefix}' "
+	gum_filter = f"gum filter {pr_prefix} --text.foreground '{secondary_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+		--header 'What Type Of Pull Request Is This?' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
+		--cursor-text.foreground '{prompt_color}' --match.foreground '{tertiary_color}' --height 10"
+	pr_type_output = subprocess.run(gum_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	pr_type = pr_type_output.stdout.strip()
+	gum_input = f"gum input --header 'What Do You Want To Name This PR?' --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
+		--prompt.foreground '{secondary_color}'"
+	pr_title_output = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	pr_title = pr_title_output.stdout
+	# Get the PR body from the environment variable and echo newlines
+	body_from_env = subprocess.run("echo \"$PULL_REQUEST_TEMPLATE\"", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+	if body_from_env.returncode != 0:
+		console.print("No PULL_REQUEST_TEMPLATE environment variable found", style="bold red")
+		exit()
+	body_from_env = body_from_env.stdout.strip()
+	gum_write = f"gum write --header 'What Did You Do?' --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}'\
+		--prompt.foreground '{secondary_color}' --char-limit 0 --value '{body_from_env}' --width 65 --height 10"
+	pr_body_output = subprocess.run(gum_write, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	pr_body = pr_body_output.stdout.strip()
+	cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {string.capwords(pr_title)}' --body '{pr_body}' --draft"
+	subprocess.run(cmd1, shell=True, cwd=Path.cwd())
 	
 
 cli.add_command(init)
-cli.add_command(commit_all)
 cli.add_command(dsa_s3_sync)
 cli.add_command(branch_new)
-cli.add_command(gum_test)
-cli.add_command(gum_commit)
+cli.add_command(commit)
+cli.add_command(pr_create)
