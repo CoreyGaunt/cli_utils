@@ -28,4 +28,4 @@ aws-info:
   cd-dag-root: "dags/"
   cd-plugins-root: "plugins/"
 theme:
-  name: "embers"
+  name: "$TERMINAL_THEME"

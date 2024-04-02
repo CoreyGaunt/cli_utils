@@ -51,7 +51,7 @@ def init():
 		file.write("  dag-location: ''\n")
 		file.write("  plugins-location: ''")
 		file.write("theme:\n")
-		file.write("  name: 'dusk'\n")
+		file.write("  name: '$TERMINAL_THEME'\n")
 	console.print("Initialized .kit Directory", style="bold green")
 
 def load_config():
@@ -67,14 +67,6 @@ def load_config():
 				config = yaml.safe_load(stream)
 				Config.raise_on_escape = config["general"]["raise-on-escape"]
 				Config.raise_on_interrupt = config["general"]["raise-on-interrupt"]
-				# Add new keys to the config file
-				'''
-				path_color=$'\e[38;2;35;75;255m' # example rgb color
-				user_color=$'\e[38;2;146;9;238m' # example rgb color
-				branch_color=$'\e[38;2;254;43;7m' # example rgb color
-				git_ref_color=$'\e[38;2;126;254;238m' # example rgb color
-				status_color=$'\e[38;2;0;171;0m' # example rgb color
-				'''
 			except yaml.YAMLError as exc:
 				print(exc)
 	except FileNotFoundError:
@@ -88,8 +80,11 @@ def load_theme(config):
 	config_theme = config["theme"]["name"]
 	dev_path = "./tools/themes"
 	prod_path = ".tools/themes"
-	dev_theme = Path(f"{dev_path}/{config_theme}.yaml")
-	prod_theme = Path(f"{prod_path}/{config_theme}.yaml")
+	cmd = f"echo {config_theme}"
+	theme_output = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
+	theme = theme_output.stdout.strip()
+	dev_theme = Path(f"{dev_path}/{theme}.yaml")
+	prod_theme = Path(f"{prod_path}/{theme}.yaml")
 
 	try:
 		if dev_theme.exists():
