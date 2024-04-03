@@ -142,7 +142,7 @@ def commit_type_and_message():
 		--cursor-text.foreground '{prompt_color}' --match.foreground '{tertiary_color}' --height 10"
 	commit_type_output = subprocess.run(gum_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	commit_type = commit_type_output.stdout.strip()
-	gum_input = f"gum input --header 'What Did You Do?' --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
+	gum_input = f"gum input --header 'What Did You Do?' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
 		--prompt.foreground '{secondary_color}'"
 	commit_message_output = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	commit_message = commit_message_output.stdout.strip()
@@ -300,7 +300,7 @@ def pr_create():
 		--cursor-text.foreground '{prompt_color}' --match.foreground '{tertiary_color}' --height 10"
 	pr_type_output = subprocess.run(gum_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	pr_type = pr_type_output.stdout.strip()
-	gum_input = f"gum input --header 'What Do You Want To Name This PR?' --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
+	gum_input = f"gum input --header 'What Do You Want To Name This PR?' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
 		--prompt.foreground '{secondary_color}'"
 	pr_title_output = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	pr_title = pr_title_output.stdout
