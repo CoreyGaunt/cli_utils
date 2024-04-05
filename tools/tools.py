@@ -3,7 +3,6 @@ import click
 import subprocess
 import os
 import re
-import string
 from pathlib import Path
 from beaupy import confirm, prompt, select, select_multiple, Config
 from beaupy.spinners import *
@@ -322,7 +321,7 @@ def pr_create():
 		--prompt.foreground '{secondary_color}' --char-limit 0 --value '{body_from_env}' --width 65 --height 10"
 	pr_body_output = subprocess.run(gum_write, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	pr_body = pr_body_output.stdout.strip()
-	cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {string.capwords(pr_title)}' --body '{pr_body}' --draft"
+	cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {pr_title}' --body '{pr_body}' --draft"
 	subprocess.run(cmd1, shell=True, cwd=Path.cwd())
 	
 @click.command("run")
@@ -354,11 +353,11 @@ def dbt_run(prod, upstream, downstream, waterfall):
 					exit()
 		if downstream:
 			if downstream == '+':
-				suffix = upstream
+				suffix = downstream
 			# Only accept int values ranging from 1 to 9
 			else:
-				if re.match(r'^[1-9]{1}$', upstream):
-					suffix = f'+{upstream}'
+				if re.match(r'^[1-9]{1}$', downstream):
+					suffix = f'+{downstream}'
 				else:
 					console.print("Invalid prefix. Please specify a number between 1 and 9", style="bold red")
 					exit()
