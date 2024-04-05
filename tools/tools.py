@@ -15,47 +15,6 @@ executable_path = os.environ['EXECUTABLE_PATH']
 dev_path = Path("./tools/tools-config.yaml")
 prod_path = Path(".tools/tools-config.yaml")
 
-@click.group()
-def cli():
-	"""
-	This is a command line tool that helps with common git and python tasks.
-	"""
-	pass
-
-@click.command("init")
-def init():
-	"""
-	This command is used to create a .kit directory in the root of the project.
-	Then it will create a kit_config.yaml file in the .kit directory.
-	"""
-	Path(".tools").mkdir(exist_ok=True)
-	with open(".tools/tools-config.yaml", "w") as file:
-		file.write("general:\n")
-		file.write("  team-tag: \n")
-		file.write("  team-name: \n")
-		file.write("  raise-on-escape: true\n")
-		file.write("  raise-on-interrupt: true\n")
-		file.write("commits:\n")
-		file.write("  conventional-commits:\n")
-		file.write("	types:\n")
-		file.write("	  - Feat\n")
-		file.write("	  - Refactor\n")
-		file.write("	  - Fix\n")
-		file.write("	  - Docs\n")
-		file.write("	  - Style\n")
-		file.write("	  - Test\n")
-		file.write("	  - Chore\n")
-		file.write("aws-info:\n")
-		file.write("  local-dag-root: ''\n")
-		file.write("  local-plugins-root: ''\n")
-		file.write("  cd-dag-root: ''\n")
-		file.write("  cd-plugins-root: ''\n")
-		file.write("  dag-location: ''\n")
-		file.write("  plugins-location: ''")
-		file.write("theme:\n")
-		file.write("  name: '$TERMINAL_THEME'\n")
-	console.print("Initialized .kit Directory", style="bold green")
-
 def add_cmd_to_zsh_history(cmd):
 	with open(Path.home() / ".zsh_history", "a") as history_file:
 		history_file.write(f"{cmd}\n")
@@ -156,13 +115,53 @@ def commit_type_and_message():
 
 	return commit_type, commit_message
 
+@click.group()
+def cli():
+	"""
+	This is a command line tool that helps with common git and python tasks.
+	"""
+	pass
+
+@click.command("init")
+def init():
+	"""
+	This command is used to create a .kit directory in the root of the project.
+	Then it will create a kit_config.yaml file in the .kit directory.
+	"""
+	Path(".tools").mkdir(exist_ok=True)
+	with open(".tools/tools-config.yaml", "w") as file:
+		file.write("general:\n")
+		file.write("  team-tag: \n")
+		file.write("  team-name: \n")
+		file.write("  raise-on-escape: true\n")
+		file.write("  raise-on-interrupt: true\n")
+		file.write("commits:\n")
+		file.write("  conventional-commits:\n")
+		file.write("	types:\n")
+		file.write("	  - Feat\n")
+		file.write("	  - Refactor\n")
+		file.write("	  - Fix\n")
+		file.write("	  - Docs\n")
+		file.write("	  - Style\n")
+		file.write("	  - Test\n")
+		file.write("	  - Chore\n")
+		file.write("aws-info:\n")
+		file.write("  local-dag-root: ''\n")
+		file.write("  local-plugins-root: ''\n")
+		file.write("  cd-dag-root: ''\n")
+		file.write("  cd-plugins-root: ''\n")
+		file.write("  dag-location: ''\n")
+		file.write("  plugins-location: ''")
+		file.write("theme:\n")
+		file.write("  name: '$TERMINAL_THEME'\n")
+	console.print("Initialized .kit Directory", style="bold green")
+
 @click.command("commit")
 def commit():
 	"""
 	This command is used to commit all the changes in the current directory.
 	It also asks for a commit message following the Conventional Commits standard.
 	"""
-	## TODO: Parameterize colors for different messages
 	config = load_config()
 	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
 	gum_confirm = f"gum confirm 'Do you want to commit all changes?' --prompt.foreground '{primary_color}' --selected.background '{prompt_color}'\
@@ -325,7 +324,6 @@ def pr_create():
 	subprocess.run(cmd1, shell=True, cwd=Path.cwd())
 	
 @click.command("run")
-# Add options here
 @click.option('--prod', '-p', is_flag=True, help="Run the dbt Models in the production environment.")
 @click.option('--upstream', '-u', default='', is_flag=False, flag_value='+', help="Run the specified model & its parent models. You can also specify the number of levels to go up. E.g. 1+<model_name> or 2+<model_name>. Defaults to +<model_name>.")
 @click.option('--downstream', '-d', default='', is_flag=False, flag_value='+', help="Run specified model & its children models. You can also specify the number of levels to go up. E.g. <model_name>+1 or <model_name>+2. Defaults to <model_name>+.")
