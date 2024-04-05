@@ -198,6 +198,7 @@ def commit():
 		cmd3 = "git push"
 		subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
+		subprocess.run(f'history -s "{cmd2}"', shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
 
 # TODO: Refactor using Gum commands
