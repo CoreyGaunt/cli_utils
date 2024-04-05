@@ -195,10 +195,12 @@ def commit():
 		cmd1 = f"git add {tracked_files_for_commit}"
 		commit_message, commit_type = commit_type_and_message()
 		cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
+		save_cmd2 = f'history -s "{cmd2}"'
+		print(save_cmd2)
 		cmd3 = "git push"
 		subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
-		subprocess.run(f'history -s "{cmd2}"', shell=True, check=True, cwd=Path.cwd())
+		subprocess.run(save_cmd2, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
 
 # TODO: Refactor using Gum commands
