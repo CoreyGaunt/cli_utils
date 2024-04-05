@@ -1,6 +1,7 @@
 import yaml
 import click
 import subprocess
+import os
 import re
 import string
 from pathlib import Path
@@ -9,6 +10,8 @@ from beaupy.spinners import *
 from rich.console import Console
 
 console = Console()
+
+executable_path = os.environ['EXECUTABLE_PATH']
 
 dev_path = Path("./tools/tools-config.yaml")
 prod_path = Path(".tools/tools-config.yaml")
@@ -53,6 +56,11 @@ def init():
 		file.write("theme:\n")
 		file.write("  name: '$TERMINAL_THEME'\n")
 	console.print("Initialized .kit Directory", style="bold green")
+
+def add_cmd_to_zsh_history(cmd):
+	with open(Path.home() / ".zsh_history", "a") as history_file:
+		history_file.write(f"{cmd}\n")
+	os.system("exec zsh -l")
 
 def load_config():
 	try:
@@ -170,10 +178,8 @@ def commit():
 		commit_type, commit_message = commit_type_and_message()
 		cmd1 = "git add ."
 		cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
-		save_cmd2 = f'history -s "{cmd2}"'
 		cmd3 = "git push"
 		subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
-		subprocess.run(save_cmd2, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
 	else:
@@ -197,10 +203,8 @@ def commit():
 		cmd1 = f"git add {tracked_files_for_commit}"
 		commit_message, commit_type = commit_type_and_message()
 		cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
-		save_cmd2 = f'history -s "{cmd2}"'
 		cmd3 = "git push"
 		subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
-		subprocess.run(save_cmd2, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
 
@@ -321,9 +325,69 @@ def pr_create():
 	cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {string.capwords(pr_title)}' --body '{pr_body}' --draft"
 	subprocess.run(cmd1, shell=True, cwd=Path.cwd())
 	
+@click.command("run")
+# Add options here
+@click.option('--prod', '-p', is_flag=True, help="Run the dbt Models in the production environment.")
+@click.option('--upstream', '-u', default='', is_flag=False, flag_value='+', help="Run the specified model & its parent models. You can also specify the number of levels to go up. E.g. 1+<model_name> or 2+<model_name>. Defaults to +<model_name>.")
+@click.option('--downstream', '-d', default='', is_flag=False, flag_value='+', help="Run specified model & its children models. You can also specify the number of levels to go up. E.g. <model_name>+1 or <model_name>+2. Defaults to <model_name>+.")
+@click.option('--waterfall', '-a', is_flag=True, help="Run the specified model, its children models, and the parents of its children models. Leverages the '@' dbt operator. NOTE - This command cannot be run alongside --upstream or --downstream.")
+def dbt_run(prod, upstream, downstream, waterfall):
+	config = load_config()
+	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
+	prefix, suffix = '', ''
+
+	if waterfall:
+		if upstream or downstream:
+			console.print("Cannot run --waterfall with --upstream or --downstream", style="bold red")
+			exit()
+		prefix = '@'
+	else:
+		if upstream:
+			if upstream == '+':
+				prefix = upstream
+			# Only accept int values ranging from 1 to 9
+			else:
+				if re.match(r'^[1-9]{1}$', upstream):
+					prefix = f'{upstream}+'
+				else:
+					console.print("Invalid prefix. Please specify a number between 1 and 9", style="bold red")
+					exit()
+		if downstream:
+			if downstream == '+':
+				suffix = upstream
+			# Only accept int values ranging from 1 to 9
+			else:
+				if re.match(r'^[1-9]{1}$', upstream):
+					suffix = f'+{upstream}'
+				else:
+					console.print("Invalid prefix. Please specify a number between 1 and 9", style="bold red")
+					exit()
+	# Anchor to the target directory models/
+	# Recursively list all .sql files in the target directory
+	# Format each file to only show the basename and trim the file extension
+	model_list = ""
+	models = subprocess.run("find models/ -type f -name '*.sql' -exec basename {} .sql \;", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+	models = models.stdout.strip().split("\n")
+	for model in models:
+		model_list += f"'{model}' "
+	gum_models_filter = f"gum filter {model_list} --text.foreground '{secondary_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+			--header 'Select A Model To Run' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
+			--cursor-text.foreground '{prompt_color}' --match.foreground '{tertiary_color}' --height 10\
+			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
+	model_name_output = subprocess.run(gum_models_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	model_name = model_name_output.stdout.strip()
+	model_string = f"{prefix}{model_name}{suffix}"
+
+	if prod:
+		cmd = f"dbt run -s {model_string} --target prod"
+	else:
+		cmd = f"dbt run -s {model_string}"
+	subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd())
+	add_cmd_to_zsh_history(cmd)
 
 cli.add_command(init)
 cli.add_command(dsa_s3_sync)
 cli.add_command(branch_new)
 cli.add_command(commit)
 cli.add_command(pr_create)
+cli.add_command(dbt_run)
