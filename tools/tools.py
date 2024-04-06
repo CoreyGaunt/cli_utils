@@ -199,7 +199,7 @@ def commit():
 		for file in tracked_files:
 			tracked_files_for_commit += f"{file} "
 		cmd1 = f"git add {tracked_files_for_commit}"
-		commit_message, commit_type = commit_type_and_message()
+		commit_type, commit_message = commit_type_and_message()
 		cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
 		cmd3 = "git push"
 		subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
