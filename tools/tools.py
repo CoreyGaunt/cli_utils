@@ -379,8 +379,13 @@ def dbt_run(prod, upstream, downstream, waterfall):
 		cmd = f"dbt run -s {model_string} --target prod"
 	else:
 		cmd = f"dbt run -s {model_string}"
-	subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd())
-	add_cmd_to_zsh_history(cmd)
+	try:
+		subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd(), text=True)
+		add_cmd_to_zsh_history(cmd)
+	except subprocess.CalledProcessError:
+		console.print("An error occurred while running the dbt models", style="bold red")
+		add_cmd_to_zsh_history(cmd)
+		exit()
 
 cli.add_command(init)
 cli.add_command(dsa_s3_sync)
