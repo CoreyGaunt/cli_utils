@@ -1,0 +1,8 @@
+# Path to bash_pallettes dir
+export zsh_pallettes_dir=<ROOT>/bash_pallettes/
+
+# Path to theme_picker zsh script
+source <ROOT>/theme_picker.sh
+
+# Name of ZSH Theme
+ZSH_THEME="headline"
