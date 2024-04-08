@@ -8,7 +8,14 @@
 
 source ~/.zprofile
 
-theme='dusk'
+# Options:
+# dusk
+# embers
+# glacial
+# matrix
+# iron_gold
+
+theme=$TERMINAL_THEME
 
 # Formatting aliases
 # (add more if you need)
