@@ -291,7 +291,8 @@ def branch_new():
 	spinner.stop()
 
 @click.command("pr-create")
-def pr_create():
+@click.option('--is-cross-team', '-c', is_flag=True, help="Create a cross-team pull request.")
+def pr_create(is_cross_team):
 	config = load_config()
 	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
 	pr_prefix = ""
@@ -307,7 +308,10 @@ def pr_create():
 	pr_title_output = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	pr_title = pr_title_output.stdout
 	# Get the PR body from the environment variable and echo newlines
-	body_from_env = subprocess.run("echo \"$PULL_REQUEST_TEMPLATE\"", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+	if is_cross_team:
+		body_from_env = subprocess.run("echo \"$MISC_PULL_REQUEST_TEMPLATE\"", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+	else:
+		body_from_env = subprocess.run("echo \"$DATA_AND_ANALYTICS_PULL_REQUEST_TEMPLATE\"", shell=True, check=True, stdout=subprocess.PIPE, text=True)
 	if body_from_env.returncode != 0:
 		console.print("No PULL_REQUEST_TEMPLATE environment variable found", style="bold red")
 		exit()
