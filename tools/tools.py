@@ -3,6 +3,7 @@ import click
 import subprocess
 import os
 import re
+from string import capwords
 from pathlib import Path
 from beaupy import confirm, prompt, select, select_multiple, Config
 from beaupy.spinners import *
@@ -274,12 +275,16 @@ def branch_new():
 		branch_ticket_ref = f"{config['general']['team-tag']}-{ticket_number}"
 	branch_name = prompt(f"[{prompt_color}]Enter the branch name[/{prompt_color}]")
 	branch_name = remove_color_indicators(branch_name)
-	cmd1 = "git checkout main && git pull"
+	pull_default_branch_name = "git rev-parse --abbrev-ref origin/HEAD"
+	default_branch_output = subprocess.run(pull_default_branch_name, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	default_branch = default_branch_output.stdout.strip()
+	default_branch = default_branch.replace("origin/", "")
+	cmd1 = f"git checkout {default_branch} && git pull"
 	if has_corresponding_ticket:
 		cmd2 = f"git checkout -b {branch_type}/{branch_ticket_ref}-{branch_name} && git push --set-upstream origin {branch_type}/{branch_ticket_ref}-{branch_name}"
 	else:
 		cmd2 = f"git checkout -b {branch_type}/{branch_name} && git push --set-upstream origin {branch_type}/{branch_name}"
-	spinner = Spinner(LOADING, "	  Pulling Down From Main")
+	spinner = Spinner(LOADING, f"	  Pulling Down From {capwords(default_branch)}")
 	spinner.start()
 	subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
