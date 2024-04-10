@@ -204,7 +204,6 @@ def commit():
 		subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
 
-# TODO: Refactor using Gum commands
 @click.command("s3-sync")
 def dsa_s3_sync():
 	"""
@@ -222,41 +221,28 @@ def dsa_s3_sync():
 	for source in sources_options:
 		gum_src_list += f"'{source}' "
 
-	gum_src_choose = f"gum choose {gum_src_list} --ordered --cursor '{cursor_style}' --cursor.foreground '{cursor_color}'\
-		--item.foreground '{tertiary_color}' --selected.foreground '{prompt_color}'"
+	gum_src_choose = f"gum choose {gum_src_list} --ordered --cursor '{cursor_style}' --cursor.foreground '{quaternary_color}'\
+		--item.foreground '{tertiary_color}'"
 	src_output = subprocess.run(gum_src_choose, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	src = src_output.stdout.strip()
-	print(src)
-	# targets = [
-	# 	f"{config['aws-info']['s3-dag-location']}",
-	# 	f"{config['aws-info']['s3-plugins-location']}"
-	# ]
+	if src == config['aws-info']['dag-root']:
+		target = config['aws-info']['s3-dag-location']
+	elif src == config['aws-info']['plugins-root']:
+		target = config['aws-info']['s3-plugins-location']
 
-	# source_selection = select(
-	# 	options=sources,
-	# 	cursor=cursor_style,
-	# 	cursor_style=cursor_color
-	# 	)
-	# source_selection = remove_color_indicators(source_selection)
+	gum_confirm = f"gum confirm 'Are you sure you want to sync {src.upper()} with {target.upper()}?' --prompt.foreground '{quaternary_color}'\
+		--selected.background '{secondary_color}' --unselected.background '{tertiary_color}'"
+	gum_confirm_output = subprocess.run(gum_confirm, shell=True, cwd=Path.cwd(), text=True)
+	if gum_confirm_output.returncode != 0:
+		confirmation = False
+	else:
+		confirmation = True
 
-	# target_selection = select(
-	# 	options=targets,
-	# 	cursor=cursor_style,
-	# 	cursor_style=cursor_color
-	# 	)
-	# target_selection = remove_color_indicators(target_selection)
-
-	# confirmation = confirm(
-	# 	question=f"[{prompt_color}]Are you sure you want to sync {source_selection} with {target_selection}?[/{prompt_color}]",
-	# 	yes_text="I am sure, sync it",
-	# 	no_text="Nope! Go back!",
-	# 	cursor=cursor_style,
-	# 	cursor_style=cursor_color)
-	# if confirmation:
-	# 	cmd = f"aws s3 sync {source_selection} {target_selection} --exclude '**/.DS_Store' --exclude '**/__pycache__/**' --exclude '.DS_Store'"
-	# 	subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd())
-	# else:
-	# 	console.print("Sync Cancelled", style="bold red")
+	if confirmation:
+		cmd = f"aws s3 sync {src} {target} --exclude '**/.DS_Store' --exclude '**/__pycache__/**' --exclude '.DS_Store'"
+		subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd())
+	else:
+		console.print("Sync Cancelled", style="bold red")
 
 # TODO: Refactor using Gum commands
 @click.command("branch-new")
@@ -298,7 +284,7 @@ def branch_new():
 	subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	spinner.stop()
-	
+
 @click.command("pr-create")
 def pr_create():
 	config = load_config()
@@ -327,7 +313,7 @@ def pr_create():
 	pr_body = pr_body_output.stdout.strip()
 	cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {pr_title}' --body '{pr_body}' --draft"
 	subprocess.run(cmd1, shell=True, cwd=Path.cwd())
-	
+
 @click.command("run")
 @click.option('--prod', '-p', is_flag=True, help="Run the dbt Models in the production environment.")
 @click.option('--upstream', '-u', default='', is_flag=False, flag_value='+', help="Run the specified model & its parent models. You can also specify the number of levels to go up. E.g. 1+<model_name> or 2+<model_name>. Defaults to +<model_name>.")
