@@ -69,10 +69,10 @@ def load_theme(config):
 		exit()
 
 	primary_color = theme['color_pallette']['hex_user_color']
-	secondary_color = theme['color_pallette']['hex_prompt_color']
+	secondary_color = theme['color_pallette']['hex_path_color']
 	tertiary_color = theme['color_pallette']['hex_git_ref_color']
+	prompt_color = theme['color_pallette']['hex_prompt_color']
 	quaternary_color = theme['color_pallette']['hex_branch_color']
-	prompt_color = theme['color_pallette']['hex_path_color']
 	cursor_style = theme['icons']['prompt_icon']
 	cursor_color = theme['color_pallette']['hex_user_color']
 	filter_prompt = theme['icons']['gum_filter_icon']
@@ -103,13 +103,13 @@ def commit_type_and_message():
 			commit_scopes += f"'{scope}'"
 		else:
 			commit_scopes += f"'{scope}' "
-	gum_filter = f"gum filter {commit_scopes} --text.foreground '{secondary_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+	gum_filter = f"gum filter {commit_scopes} --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
 		--header 'What Type Of Commit Is This?' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
-		--cursor-text.foreground '{prompt_color}' --match.foreground '{tertiary_color}' --height 10"
+		--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10"
 	commit_type_output = subprocess.run(gum_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	commit_type = commit_type_output.stdout.strip()
 	gum_input = f"gum input --header 'What Did You Do?' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
-		--prompt.foreground '{secondary_color}'"
+		--prompt.foreground '{prompt_color}'"
 	commit_message_output = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	commit_message = commit_message_output.stdout.strip()
 
@@ -146,12 +146,10 @@ def init():
 		file.write("	  - Test\n")
 		file.write("	  - Chore\n")
 		file.write("aws-info:\n")
-		file.write("  local-dag-root: ''\n")
-		file.write("  local-plugins-root: ''\n")
-		file.write("  cd-dag-root: ''\n")
-		file.write("  cd-plugins-root: ''\n")
-		file.write("  dag-location: ''\n")
-		file.write("  plugins-location: ''")
+		file.write("  dag-root: ''\n")
+		file.write("  plugins-root: ''\n")
+		file.write("  s3-dag-location: ''\n")
+		file.write("  s3-plugins-location: ''")
 		file.write("theme:\n")
 		file.write("  name: '$TERMINAL_THEME'\n")
 	console.print("Initialized .kit Directory", style="bold green")
@@ -164,8 +162,8 @@ def commit():
 	"""
 	config = load_config()
 	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
-	gum_confirm = f"gum confirm 'Do you want to commit all changes?' --prompt.foreground '{primary_color}' --selected.background '{prompt_color}'\
-		--unselected.background '{secondary_color}'"
+	gum_confirm = f"gum confirm 'Do you want to commit all changes?' --prompt.foreground '{primary_color}'\
+		--selected.background '{secondary_color}' --unselected.background '{tertiary_color}'"
 	gum_confirm_output = subprocess.run(gum_confirm, shell=True, cwd=Path.cwd(), text=True)
 	if gum_confirm_output.returncode != 0:
 		confirmation = False
@@ -189,9 +187,9 @@ def commit():
 		changed_files_list = changed_files_output.stdout.strip().split("\n")
 		for file in changed_files_list:
 			files += f"'{file.strip()}' "
-		gum_tracked_files_filter = f"gum filter {files} --text.foreground '{secondary_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+		gum_tracked_files_filter = f"gum filter {files} --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
 			--header 'Which File(s) Would You Like To Add?' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
-			--cursor-text.foreground '{prompt_color}' --match.foreground '{tertiary_color}' --height 10 --no-limit\
+			--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10 --no-limit\
 			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
 		tracked_files_output = subprocess.run(gum_tracked_files_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 		tracked_files = tracked_files_output.stdout.strip()
@@ -214,44 +212,51 @@ def dsa_s3_sync():
 	"""
 	config = load_config()
 	config = load_config()
-	primary_color, secondary_color, _, _, prompt_color, cursor_style, cursor_color, _ = load_theme(config)
+	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, _ = load_theme(config)
 	console.print("Syncing Local Data With S3 Bucket", style=primary_color, highlight=True)
-	sources = [
-		f"[{secondary_color}]{config['aws-info']['cd-dag-root']}[/{secondary_color}]",
-		f"[{secondary_color}]{config['aws-info']['cd-plugins-root']}[/{secondary_color}]",
-		f"[{secondary_color}]{config['aws-info']['local-dag-root']}[/{secondary_color}]",
-		f"[{secondary_color}]{config['aws-info']['local-plugins-root']}[/{secondary_color}]"
+	gum_src_list = ""
+	sources_options = [
+		f"{config['aws-info']['dag-root']}",
+		f"{config['aws-info']['plugins-root']}",
 	]
-	targets = [
-		f"[{secondary_color}]{config['aws-info']['dag-location']}[/{secondary_color}]",
-		f"[{secondary_color}]{config['aws-info']['plugins-location']}[/{secondary_color}]"
-	]
+	for source in sources_options:
+		gum_src_list += f"'{source}' "
 
-	source_selection = select(
-		options=sources,
-		cursor=cursor_style,
-		cursor_style=cursor_color
-		)
-	source_selection = remove_color_indicators(source_selection)
+	gum_src_choose = f"gum choose {gum_src_list} --ordered --cursor '{cursor_style}' --cursor.foreground '{cursor_color}'\
+		--item.foreground '{tertiary_color}' --selected.foreground '{prompt_color}'"
+	src_output = subprocess.run(gum_src_choose, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	src = src_output.stdout.strip()
+	print(src)
+	# targets = [
+	# 	f"{config['aws-info']['s3-dag-location']}",
+	# 	f"{config['aws-info']['s3-plugins-location']}"
+	# ]
 
-	target_selection = select(
-		options=targets,
-		cursor=cursor_style,
-		cursor_style=cursor_color
-		)
-	target_selection = remove_color_indicators(target_selection)
+	# source_selection = select(
+	# 	options=sources,
+	# 	cursor=cursor_style,
+	# 	cursor_style=cursor_color
+	# 	)
+	# source_selection = remove_color_indicators(source_selection)
 
-	confirmation = confirm(
-		question=f"[{prompt_color}]Are you sure you want to sync {source_selection} with {target_selection}?[/{prompt_color}]",
-		yes_text="I am sure, sync it",
-		no_text="Nope! Go back!",
-		cursor=cursor_style,
-		cursor_style=cursor_color)
-	if confirmation:
-		cmd = f"aws s3 sync {source_selection} {target_selection} --exclude '**/.DS_Store' --exclude '**/__pycache__/**' --exclude '.DS_Store'"
-		subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd())
-	else:
-		console.print("Sync Cancelled", style="bold red")
+	# target_selection = select(
+	# 	options=targets,
+	# 	cursor=cursor_style,
+	# 	cursor_style=cursor_color
+	# 	)
+	# target_selection = remove_color_indicators(target_selection)
+
+	# confirmation = confirm(
+	# 	question=f"[{prompt_color}]Are you sure you want to sync {source_selection} with {target_selection}?[/{prompt_color}]",
+	# 	yes_text="I am sure, sync it",
+	# 	no_text="Nope! Go back!",
+	# 	cursor=cursor_style,
+	# 	cursor_style=cursor_color)
+	# if confirmation:
+	# 	cmd = f"aws s3 sync {source_selection} {target_selection} --exclude '**/.DS_Store' --exclude '**/__pycache__/**' --exclude '.DS_Store'"
+	# 	subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd())
+	# else:
+	# 	console.print("Sync Cancelled", style="bold red")
 
 # TODO: Refactor using Gum commands
 @click.command("branch-new")
@@ -301,9 +306,9 @@ def pr_create():
 	pr_prefix = ""
 	for prefix in config['branches']['branch-prefixes']:
 		pr_prefix += f"'{prefix}' "
-	gum_filter = f"gum filter {pr_prefix} --text.foreground '{secondary_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+	gum_filter = f"gum filter {pr_prefix} --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
 		--header 'What Type Of Pull Request Is This?' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
-		--cursor-text.foreground '{prompt_color}' --match.foreground '{tertiary_color}' --height 10"
+		--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10"
 	pr_type_output = subprocess.run(gum_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	pr_type = pr_type_output.stdout.strip()
 	gum_input = f"gum input --header 'What Do You Want To Name This PR?' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
@@ -367,9 +372,9 @@ def dbt_run(prod, upstream, downstream, waterfall):
 	models = models.stdout.strip().split("\n")
 	for model in models:
 		model_list += f"'{model}' "
-	gum_models_filter = f"gum filter {model_list} --text.foreground '{secondary_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+	gum_models_filter = f"gum filter {model_list} --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
 			--header 'Select A Model To Run' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
-			--cursor-text.foreground '{prompt_color}' --match.foreground '{tertiary_color}' --height 10\
+			--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10\
 			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
 	model_name_output = subprocess.run(gum_models_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	model_name = model_name_output.stdout.strip()

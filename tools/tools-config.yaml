@@ -20,12 +20,10 @@ branches:
     - chore
     - docs
 aws-info:
-  bucket-name: "s3://dsa-team-etl-dev"
-  dag-location: "s3://dsa-team-etl-dev/dags/"
-  plugins-location: "s3://dsa-team-etl-dev/dags/plugins/"
-  local-dag-root: "dsa-dags/dags/"
-  local-plugins-root: "dsa-dags/plugins/"
-  cd-dag-root: "dags/"
-  cd-plugins-root: "plugins/"
+  s3-bucket-name: "s3://dsa-team-etl-dev"
+  s3-dag-location: "s3://dsa-team-etl-dev/dags/"
+  s3-plugins-location: "s3://dsa-team-etl-dev/dags/plugins/"
+  dag-root: "dsa-dags/dags/"
+  plugins-root: "dsa-dags/plugins/"
 theme:
   name: "$TERMINAL_THEME"
