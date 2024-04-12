@@ -1,13 +1,14 @@
-import yaml
-import click
-import subprocess
 import os
 import re
-from string import capwords
+import yaml
+import click
+import shlex
+import subprocess
 from pathlib import Path
-from beaupy import confirm, prompt, select, select_multiple, Config
+from string import capwords
 from beaupy.spinners import *
 from rich.console import Console
+from beaupy import confirm, prompt, select, select_multiple, Config
 
 console = Console()
 
@@ -320,7 +321,9 @@ def pr_create(is_cross_team):
 		--prompt.foreground '{secondary_color}' --char-limit 0 --value '{body_from_env}' --width 65 --height 10"
 	pr_body_output = subprocess.run(gum_write, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	pr_body = pr_body_output.stdout.strip()
-	cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {pr_title}' --body '{pr_body}' --draft"
+	pr_body_escaped = shlex.quote(pr_body)
+	# handle special characters in pr_body that would cause in error
+	cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {pr_title}' --body '{pr_body_escaped}' --draft"
 	subprocess.run(cmd1, shell=True, cwd=Path.cwd())
 
 @click.command("run")
