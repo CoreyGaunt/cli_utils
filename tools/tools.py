@@ -387,9 +387,68 @@ def dbt_run(prod, upstream, downstream, waterfall):
 		add_cmd_to_zsh_history(cmd)
 		exit()
 
+@click.command("compare-objects")
+def compare_objects():
+	config = load_config()
+	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
+	schemas = "'utilities' 'sources' 'transform' 'dw'"
+	mart_schemas_output = subprocess.run("find models/4_marts/ -type d -name 'mart_*' -exec basename {} \;", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+	mart_schemas = mart_schemas_output.stdout.strip().split("\n")
+	for schema in mart_schemas:
+		schemas += f" '{schema}'"
+	gum_schema_filter = f"gum filter {schemas}  --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+			--header 'Select A Schema' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
+			--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10\
+			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
+	schema_output = subprocess.run(gum_schema_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	schema = schema_output.stdout.strip()
+	if schema == "utilities":
+		dir_location = "0_utilities"
+	elif schema == "sources":
+		dir_location = "1_sources"
+	elif schema == "transform":
+		dir_location = "2_transform"
+	elif schema == "dw":
+		dir_location = "3_dw"
+	else:
+		dir_location = f"4_marts/{schema}"
+	# Anchor to the target directory models/
+	# Recursively list all .sql files in the target directory
+	# Format each file to only show the basename and trim the file extension
+	model_list = ""
+	models = subprocess.run(f"find models/{dir_location} -type f -name '*.sql' -exec basename {{}} .sql \;", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+	models = models.stdout.strip().split("\n")
+	for model in models:
+		model_list += f"'{model}' "
+	gum_models_filter = f"gum filter {model_list} --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+			--header 'Select A Model To Run' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
+			--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10\
+			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
+	model_name_output = subprocess.run(gum_models_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	model_name = model_name_output.stdout.strip()
+
+	gum_input = f"gum input --header 'What is the primary_key?' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
+		--prompt.foreground '{prompt_color}'"
+	primary_key_output = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	primary_key = primary_key_output.stdout.strip()
+
+	comparison_schema_output = subprocess.run("echo \"$DBT_SNOWFLAKE_TEST_SCHEMA\"", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+	comparison_schema = comparison_schema_output.stdout.strip().lower()
+
+	cmd = f"dbt run-operation compare_objects --args \"{{comparison_schema : {comparison_schema}_{schema}, prod_schema : {schema}, object_name : {model_name}, primary_key: '{primary_key}'}}\""
+	
+	try:
+		subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd(), text=True)
+		add_cmd_to_zsh_history(cmd)
+	except subprocess.CalledProcessError:
+		console.print("An error occurred while running the dbt models", style="bold red")
+		add_cmd_to_zsh_history(cmd)
+		exit()
+
 cli.add_command(init)
 cli.add_command(dsa_s3_sync)
 cli.add_command(branch_new)
 cli.add_command(commit)
 cli.add_command(pr_create)
 cli.add_command(dbt_run)
+cli.add_command(compare_objects)
