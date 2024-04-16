@@ -12,10 +12,9 @@ from string import capwords
 from beaupy.spinners import *
 from rich.console import Console
 from beaupy import confirm, prompt, select, select_multiple, Config
+from utils.tools_utils import ToolsUtils
 
 console = Console()
-
-executable_path = os.environ['EXECUTABLE_PATH']
 
 dev_path = Path("./tools/tools-config.yaml")
 prod_path = Path(".tools/tools-config.yaml")

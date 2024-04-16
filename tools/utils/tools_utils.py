@@ -14,6 +14,24 @@ class ToolsUtils:
 		self.prod_path = prod_path
 		pass
 
+	def check_and_install_terminal_requirements(self):
+		# Check if Homebrew is installed, if not install it
+		homebrew_check = subprocess.run("brew --version", shell=True, check=False, stdout=subprocess.PIPE, text=True)
+		if homebrew_check.returncode != 0:
+			self.console.print("Homebrew Not Found, Installing Homebrew", style="bold red")
+			subprocess.run("/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+			self.console.print("Homebrew Installed", style="bold green")
+		else:
+			self.console.print("Homebrew Found", style="bold green")
+		# Check if Gum is installed, if not install it
+		gum_check = subprocess.run("gum --version", shell=True, check=False, stdout=subprocess.PIPE, text=True)
+		if gum_check.returncode != 0:
+			self.console.print("Gum Not Found, Installing Gum", style="bold red")
+			subprocess.run("brew install gum", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+			self.console.print("Gum Installed", style="bold green")
+		else:
+			self.console.print("Gum Found", style="bold green")
+			
 	def add_cmd_to_zsh_history(self, cmd):
 		with open(Path.home() / ".zsh_history", "a") as history_file:
 			history_file.write(f"{cmd}\n")
@@ -93,7 +111,7 @@ class ToolsUtils:
 		
 		return primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt
 	
-	def remove_color_indicators(string):
+	def remove_color_indicators(self, string):
 		# Define a regular expression pattern to match color indicators
 		rgb_pattern = r'\[/?[a-zA-Z]+\s*[a-zA-Z]*\]'
 		
@@ -139,11 +157,15 @@ class ToolsUtils:
 
 		return gum_filter_output
 	
-	def gum_input(self, header):
+	def gum_input(self, header, placeholder=None):
 		config = self.load_config()
 		primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = self.load_theme(config)
+		if placeholder:
+			pass 
+		else:
+			placeholder = " "
 		gum_input = f"gum input --header '{header}' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
-			--prompt.foreground '{prompt_color}'"
+			--prompt.foreground '{prompt_color}' --value '{placeholder}'"
 		gum_input_process = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 		gum_input_output = gum_input_process.stdout.strip()
 
@@ -171,16 +193,6 @@ class ToolsUtils:
 		gum_choose_output = gum_choose_process.stdout.strip()
 
 		return gum_choose_output
-	
-	def gum_input(self, header):
-		config = self.load_config()
-		primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = self.load_theme(config)
-		gum_input = f"gum input --header '{header}' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
-		--prompt.foreground '{secondary_color}'"
-		gum_input_process = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
-		gum_input_output = gum_input_process.stdout.strip()
-
-		return gum_input_output
 	
 	def gum_write(self, header, templated_text=None):
 		config = self.load_config()

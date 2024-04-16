@@ -27,3 +27,6 @@ aws-info:
   plugins-root: "dsa-dags/plugins/"
 theme:
   name: "$TERMINAL_THEME"
+excluded-commands:
+  - cmd_s3-sync
+  - __init__
