@@ -75,6 +75,7 @@ class ToolsUtils:
 		theme_output = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
 		theme = theme_output.stdout.strip()
 		theme_file = f"{theme}.yaml"
+		breakpoint()
 		
 
 		try:
