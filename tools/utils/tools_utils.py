@@ -163,9 +163,11 @@ class ToolsUtils:
 		if placeholder:
 			pass 
 		else:
-			placeholder = " "
-		gum_input = f"gum input --header '{header}' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
-			--prompt.foreground '{prompt_color}' --value '{placeholder}'"
+			placeholder = ""
+		sanitize_header = header.replace("'", "'\\''")
+		sanitize_placeholder = placeholder.replace("'", "'\\''")
+		gum_input = f"gum input --header '{sanitize_header}' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
+			--prompt.foreground '{prompt_color}' --value '{sanitize_placeholder}'"
 		gum_input_process = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 		gum_input_output = gum_input_process.stdout.strip()
 

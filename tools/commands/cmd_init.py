@@ -19,7 +19,10 @@ def cli():
 	utils.check_and_install_terminal_requirements()
 	# check if the .tools directory exists, and if the tools-config.yaml file exists
 	confirmation = True
-	if Path(".tools").exists() and Path(".tools/tools-config.yaml").exists():
+	if (
+		Path(".tools").exists() and Path(".tools/tools-config.yaml").exists()
+		or Path("./tools").exists() and Path("./tools/tools-config.yaml").exists()
+	):
 		confirmation = utils.gum_confirm("A .tools directory & tools-config.yaml file already exist. Do you want to overwrite them?")
 	if confirmation:
 		Path(".tools").mkdir(exist_ok=True)
