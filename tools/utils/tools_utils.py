@@ -3,6 +3,7 @@ import re
 import yaml
 import shlex
 import subprocess
+import pkg_resources
 from pathlib import Path
 from rich.console import Console
 from beaupy import confirm, prompt, select, Config
@@ -70,22 +71,16 @@ class ToolsUtils:
 	def load_theme(self, config):
 	
 		config_theme = config["theme"]["name"]
-		dev_path = "./tools/themes"
-		prod_path = ".tools/themes"
 		cmd = f"echo {config_theme}"
 		theme_output = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
 		theme = theme_output.stdout.strip()
-		dev_theme = Path(f"{dev_path}/{theme}.yaml")
-		prod_theme = Path(f"{prod_path}/{theme}.yaml")
+		theme_file = f"{theme}.yaml"
+		
 
 		try:
-			if dev_theme.exists():
-				file_location = dev_theme
-			elif prod_theme.exists():
-				file_location = prod_theme
-			else:
-				raise FileNotFoundError
-			with open(f"{file_location}") as stream:
+			theme_path = pkg_resources.resource_filename(__name__, theme_file)
+			print(theme_path)
+			with open(theme_path) as stream:
 				try:
 					theme = yaml.safe_load(stream)
 				except yaml.YAMLError as exc:
