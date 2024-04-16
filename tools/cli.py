@@ -2,7 +2,7 @@ import sys
 import click
 import importlib
 from pathlib import Path
-from .utils.tools_utils import ToolsUtils
+from tools.utils.tools_utils import ToolsUtils
 
 
 

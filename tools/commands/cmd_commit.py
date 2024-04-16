@@ -1,7 +1,7 @@
 import click
 import subprocess
 from pathlib import Path
-from ..utils.tools_utils import ToolsUtils
+from tools.utils.tools_utils import ToolsUtils
 
 dev_path = Path("./tools/tools-config.yaml")
 prod_path = Path(".tools/tools-config.yaml")

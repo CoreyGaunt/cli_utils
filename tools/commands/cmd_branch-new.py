@@ -5,7 +5,7 @@ from string import capwords
 from beaupy.spinners import *
 from rich.console import Console
 from beaupy import confirm, prompt, select
-from ..utils.tools_utils import ToolsUtils
+from tools.utils.tools_utils import ToolsUtils
 
 console = Console()
 

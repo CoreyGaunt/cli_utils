@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 from rich.console import Console
 from sqlparse.tokens import Whitespace
-from ..utils.tools_utils import ToolsUtils
+from tools.utils.tools_utils import ToolsUtils
 
 console = Console()
 
