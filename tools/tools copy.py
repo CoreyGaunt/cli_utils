@@ -12,13 +12,128 @@ from string import capwords
 from beaupy.spinners import *
 from rich.console import Console
 from beaupy import confirm, prompt, select, select_multiple, Config
-from tools.utils.tools_utils import ToolsUtils
 
 console = Console()
 
+executable_path = os.environ['EXECUTABLE_PATH']
+
 dev_path = Path("./tools/tools-config.yaml")
 prod_path = Path(".tools/tools-config.yaml")
-utils = ToolsUtils(dev_path, prod_path)
+
+def add_cmd_to_zsh_history(cmd):
+	with open(Path.home() / ".zsh_history", "a") as history_file:
+		history_file.write(f"{cmd}\n")
+	os.system("exec zsh -l")
+
+def load_config():
+	try:
+		if dev_path.exists():
+			file_location = dev_path
+		elif prod_path.exists():
+			file_location = prod_path
+		else:
+			raise FileNotFoundError
+		with open(f"{file_location}") as stream:
+			try:
+				config = yaml.safe_load(stream)
+				Config.raise_on_escape = config["general"]["raise-on-escape"]
+				Config.raise_on_interrupt = config["general"]["raise-on-interrupt"]
+			except yaml.YAMLError as exc:
+				print(exc)
+	except FileNotFoundError:
+		console.print("No tools-config.yaml File Found", style="bold red")
+		console.print("Run 'tools init' to create a tools-config.yaml file", style="cyan")
+		exit()
+	return config
+
+def load_theme(config):
+	
+	config_theme = config["theme"]["name"]
+	dev_path = "./tools/themes"
+	prod_path = ".tools/themes"
+	cmd = f"echo {config_theme}"
+	theme_output = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
+	theme = theme_output.stdout.strip()
+	dev_theme = Path(f"{dev_path}/{theme}.yaml")
+	prod_theme = Path(f"{prod_path}/{theme}.yaml")
+
+	try:
+		if dev_theme.exists():
+			file_location = dev_theme
+		elif prod_theme.exists():
+			file_location = prod_theme
+		else:
+			raise FileNotFoundError
+		with open(f"{file_location}") as stream:
+			try:
+				theme = yaml.safe_load(stream)
+			except yaml.YAMLError as exc:
+				print(exc)
+	except FileNotFoundError:
+		console.print("No theme file found", style="bold red")
+		exit()
+
+	primary_color = theme['color_pallette']['hex_user_color']
+	secondary_color = theme['color_pallette']['hex_path_color']
+	tertiary_color = theme['color_pallette']['hex_git_ref_color']
+	prompt_color = theme['color_pallette']['hex_prompt_color']
+	quaternary_color = theme['color_pallette']['hex_branch_color']
+	cursor_style = theme['icons']['prompt_icon']
+	cursor_color = theme['color_pallette']['hex_user_color']
+	filter_prompt = theme['icons']['gum_filter_icon']
+	
+	return primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt
+
+def remove_color_indicators(string):
+	# Define a regular expression pattern to match color indicators
+	rgb_pattern = r'\[/?[a-zA-Z]+\s*[a-zA-Z]*\]'
+	
+	# Use re.sub() to replace color indicators with an empty string
+	rgb_cleaned_text = re.sub(rgb_pattern, '', string)
+
+	# Define a regular expression pattern hex color indicators
+	hex_pattern = r'\[/?#[0-9a-fA-F]+\]'
+
+	# Use re.sub() to replace hex color indicators with an empty string
+	cleaned_text = re.sub(hex_pattern, '', rgb_cleaned_text)
+	
+	return cleaned_text
+
+def commit_type_and_message():
+	config = load_config()
+	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
+	commit_scopes = ""
+	for scope in config["commits"]["conventional-commits"]["types"]:
+		if scope == config["commits"]["conventional-commits"]["types"][-1]:
+			commit_scopes += f"'{scope}'"
+		else:
+			commit_scopes += f"'{scope}' "
+	gum_filter = f"gum filter {commit_scopes} --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+		--header 'What Type Of Commit Is This?' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
+		--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10"
+	commit_type_output = subprocess.run(gum_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	commit_type = commit_type_output.stdout.strip()
+	gum_input = f"gum input --header 'What Did You Do?' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
+		--prompt.foreground '{prompt_color}'"
+	commit_message_output = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	commit_message = commit_message_output.stdout.strip()
+
+	return commit_type, commit_message
+
+def find_all_files_in_directory(language, directory, file_type):
+	if language == "python":
+		model_list = []
+	elif language == "zsh":
+		model_list = ""
+	models = subprocess.run(f"find {directory} -type f -name '*.{file_type}' -exec basename {{}} .sql \;", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+	models = models.stdout.strip().split("\n")
+	for model in models:
+		if language == "python":
+			model_list.append(model)
+		elif language == "zsh":
+			model_list += f"'{model}' "
+	
+	return model_list
 
 @click.group()
 def cli():
@@ -65,12 +180,18 @@ def commit():
 	This command is used to commit all the changes in the current directory.
 	It also asks for a commit message following the Conventional Commits standard.
 	"""
-	config = utils.load_config()
-	gum_confirm_output = utils.gum_confirm("Do you want to commit all changes?")
-	confirmation = gum_confirm_output
+	config = load_config()
+	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
+	gum_confirm = f"gum confirm 'Do you want to commit all changes?' --prompt.foreground '{primary_color}'\
+		--selected.background '{secondary_color}' --unselected.background '{tertiary_color}'"
+	gum_confirm_output = subprocess.run(gum_confirm, shell=True, cwd=Path.cwd(), text=True)
+	if gum_confirm_output.returncode != 0:
+		confirmation = False
+	else:
+		confirmation = True
 
 	if confirmation:
-		commit_type, commit_message = utils.commit_type_and_message()
+		commit_type, commit_message = commit_type_and_message()
 		cmd1 = "git add ."
 		cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
 		cmd3 = "git push"
@@ -86,12 +207,17 @@ def commit():
 		changed_files_list = changed_files_output.stdout.strip().split("\n")
 		for file in changed_files_list:
 			files += f"'{file.strip()}' "
-		tracked_files = utils.gum_filter(files, "Which File(s) Would You Like To Add?", False)
+		gum_tracked_files_filter = f"gum filter {files} --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+			--header 'Which File(s) Would You Like To Add?' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
+			--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10 --no-limit\
+			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
+		tracked_files_output = subprocess.run(gum_tracked_files_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+		tracked_files = tracked_files_output.stdout.strip()
 		tracked_files = [file[2:] for file in tracked_files.split("\n") if file]
 		for file in tracked_files:
 			tracked_files_for_commit += f"{file} "
 		cmd1 = f"git add {tracked_files_for_commit}"
-		commit_type, commit_message = utils.commit_type_and_message()
+		commit_type, commit_message = commit_type_and_message()
 		cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
 		cmd3 = "git push"
 		subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
@@ -103,8 +229,9 @@ def dsa_s3_sync():
 	"""
 	This command is used to sync the local data with the S3 bucket.
 	"""
-	config = utils.load_config()
-	primary_color, _, _, _, _, _, _, _ = utils.load_theme(config)
+	config = load_config()
+	config = load_config()
+	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, _ = load_theme(config)
 	console.print("Syncing Local Data With S3 Bucket", style=primary_color, highlight=True)
 	gum_src_list = ""
 	sources_options = [
@@ -114,14 +241,22 @@ def dsa_s3_sync():
 	for source in sources_options:
 		gum_src_list += f"'{source}' "
 
-	src = utils.gum_choose(gum_src_list)
+	gum_src_choose = f"gum choose {gum_src_list} --ordered --cursor '{cursor_style}' --cursor.foreground '{quaternary_color}'\
+		--item.foreground '{tertiary_color}'"
+	src_output = subprocess.run(gum_src_choose, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	src = src_output.stdout.strip()
 	if src == config['aws-info']['dag-root']:
 		target = config['aws-info']['s3-dag-location']
 	elif src == config['aws-info']['plugins-root']:
 		target = config['aws-info']['s3-plugins-location']
 
-	gum_confirm_output = utils.gum_confirm(f"Are you sure you want to sync {src.upper()} with {target.upper()}?")
-	confirmation = gum_confirm_output
+	gum_confirm = f"gum confirm 'Are you sure you want to sync {src.upper()} with {target.upper()}?' --prompt.foreground '{quaternary_color}'\
+		--selected.background '{secondary_color}' --unselected.background '{tertiary_color}'"
+	gum_confirm_output = subprocess.run(gum_confirm, shell=True, cwd=Path.cwd(), text=True)
+	if gum_confirm_output.returncode != 0:
+		confirmation = False
+	else:
+		confirmation = True
 
 	if confirmation:
 		cmd = f"aws s3 sync {src} {target} --exclude '**/.DS_Store' --exclude '**/__pycache__/**' --exclude '.DS_Store'"
@@ -135,8 +270,9 @@ def branch_new():
 	"""
 	This command is used to create a new branch.
 	"""
-	config = utils.load_config()
-	primary_color, secondary_color, _, _, prompt_color, cursor_style, cursor_color, _ = utils.load_theme(config)
+	config = load_config()
+	config = load_config()
+	primary_color, secondary_color, _, _, prompt_color, cursor_style, cursor_color, _ = load_theme(config)
 	console.print("Creating a New Branch", style=primary_color, highlight=True)
 	branch_prefixes = []
 	for prefix in config['branches']['branch-prefixes']:
@@ -146,7 +282,7 @@ def branch_new():
 		cursor=cursor_style,
 		cursor_style=cursor_color
 		)
-	branch_type = utils.remove_color_indicators(branch_type)
+	branch_type = remove_color_indicators(branch_type)
 	has_corresponding_ticket = confirm(
 		question=f"[{prompt_color}]Does this branch have a corresponding Linear ticket?[/{prompt_color}]",
 		cursor=cursor_style,
@@ -154,10 +290,10 @@ def branch_new():
 		)
 	if has_corresponding_ticket:
 		ticket_number = prompt(f"[{prompt_color}]Enter the ticket number[/{prompt_color}]")
-		ticket_number = utils.remove_color_indicators(ticket_number)
+		ticket_number = remove_color_indicators(ticket_number)
 		branch_ticket_ref = f"{config['general']['team-tag']}-{ticket_number}"
 	branch_name = prompt(f"[{prompt_color}]Enter the branch name[/{prompt_color}]")
-	branch_name = utils.remove_color_indicators(branch_name)
+	branch_name = remove_color_indicators(branch_name)
 	pull_default_branch_name = "git rev-parse --abbrev-ref origin/HEAD"
 	default_branch_output = subprocess.run(pull_default_branch_name, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 	default_branch = default_branch_output.stdout.strip()
@@ -176,12 +312,20 @@ def branch_new():
 @click.command("pr-create")
 @click.option('--is-cross-team', '-c', is_flag=True, help="Create a cross-team pull request.")
 def pr_create(is_cross_team):
-	config = utils.load_config()
+	config = load_config()
+	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
 	pr_prefix = ""
 	for prefix in config['branches']['branch-prefixes']:
 		pr_prefix += f"'{prefix}' "
-	pr_type = utils.gum_filter(pr_prefix, "What Type Of Pull Request Is This?")
-	pr_title = utils.gum_input("What Do You Want To Name This PR?")
+	gum_filter = f"gum filter {pr_prefix} --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+		--header 'What Type Of Pull Request Is This?' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
+		--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10"
+	pr_type_output = subprocess.run(gum_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	pr_type = pr_type_output.stdout.strip()
+	gum_input = f"gum input --header 'What Do You Want To Name This PR?' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
+		--prompt.foreground '{secondary_color}'"
+	pr_title_output = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	pr_title = pr_title_output.stdout
 	# Get the PR body from the environment variable and echo newlines
 	if is_cross_team:
 		body_from_env = subprocess.run("echo \"$MISC_PULL_REQUEST_TEMPLATE\"", shell=True, check=True, stdout=subprocess.PIPE, text=True)
@@ -191,9 +335,13 @@ def pr_create(is_cross_team):
 		console.print("No PULL_REQUEST_TEMPLATE environment variable found", style="bold red")
 		exit()
 	body_from_env = body_from_env.stdout.strip()
-	pr_body = utils.gum_write("What Did You Do?", body_from_env)
+	gum_write = f"gum write --header 'What Did You Do?' --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}'\
+		--prompt.foreground '{secondary_color}' --char-limit 0 --value '{body_from_env}' --width 65 --height 10"
+	pr_body_output = subprocess.run(gum_write, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	pr_body = pr_body_output.stdout.strip()
+	pr_body_escaped = shlex.quote(pr_body)
 	# handle special characters in pr_body that would cause in error
-	cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {pr_title}' --body '{pr_body}' --draft"
+	cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {pr_title}' --body '{pr_body_escaped}' --draft"
 	subprocess.run(cmd1, shell=True, cwd=Path.cwd())
 
 @click.command("run")
@@ -202,7 +350,8 @@ def pr_create(is_cross_team):
 @click.option('--downstream', '-d', default='', is_flag=False, flag_value='+', help="Run specified model & its children models. You can also specify the number of levels to go up. E.g. <model_name>+1 or <model_name>+2. Defaults to <model_name>+.")
 @click.option('--waterfall', '-a', is_flag=True, help="Run the specified model, its children models, and the parents of its children models. Leverages the '@' dbt operator. NOTE - This command cannot be run alongside --upstream or --downstream.")
 def dbt_run(prod, upstream, downstream, waterfall):
-	config = utils.load_config()
+	config = load_config()
+	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
 	prefix, suffix = '', ''
 
 	if waterfall:
@@ -234,8 +383,13 @@ def dbt_run(prod, upstream, downstream, waterfall):
 	# Anchor to the target directory models/
 	# Recursively list all .sql files in the target directory
 	# Format each file to only show the basename and trim the file extension
-	model_list = utils.find_all_files_in_directory('zsh', 'models/', 'sql')
-	model_name = utils.gum_filter(model_list, "Select A Model To Run")
+	model_list = find_all_files_in_directory('zsh', 'models/', 'sql')
+	gum_models_filter = f"gum filter {model_list} --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+			--header 'Select A Model To Run' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
+			--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10\
+			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
+	model_name_output = subprocess.run(gum_models_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	model_name = model_name_output.stdout.strip()
 	model_string = f"{prefix}{model_name}{suffix}"
 
 	if prod:
@@ -244,21 +398,27 @@ def dbt_run(prod, upstream, downstream, waterfall):
 		cmd = f"dbt run -s {model_string}"
 	try:
 		subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd(), text=True)
-		utils.add_cmd_to_zsh_history(cmd)
+		add_cmd_to_zsh_history(cmd)
 	except subprocess.CalledProcessError:
 		console.print("An error occurred while running the dbt models", style="bold red")
-		utils.add_cmd_to_zsh_history(cmd)
+		add_cmd_to_zsh_history(cmd)
 		exit()
 
 @click.command("compare-objects")
 def compare_objects():
-	config = utils.load_config()
+	config = load_config()
+	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
 	schemas = "'utilities' 'sources' 'transform' 'dw'"
 	mart_schemas_output = subprocess.run("find models/4_marts/ -type d -name 'mart_*' -exec basename {} \;", shell=True, check=True, stdout=subprocess.PIPE, text=True)
 	mart_schemas = mart_schemas_output.stdout.strip().split("\n")
 	for schema in mart_schemas:
 		schemas += f" '{schema}'"
-	schema = utils.gum_filter(schemas, "Select A Schema")
+	gum_schema_filter = f"gum filter {schemas}  --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+			--header 'Select A Schema' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
+			--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10\
+			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
+	schema_output = subprocess.run(gum_schema_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	schema = schema_output.stdout.strip()
 	if schema == "utilities":
 		dir_location = "0_utilities"
 	elif schema == "sources":
@@ -277,9 +437,17 @@ def compare_objects():
 	models = models.stdout.strip().split("\n")
 	for model in models:
 		model_list += f"'{model}' "
-	model_name = utils.gum_filter(model_list, "Select A Model To Run")
+	gum_models_filter = f"gum filter {model_list} --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+			--header 'Select A Model To Run' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
+			--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10\
+			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
+	model_name_output = subprocess.run(gum_models_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	model_name = model_name_output.stdout.strip()
 
-	primary_key = utils.gum_input("What is the primary_key?")
+	gum_input = f"gum input --header 'What is the primary_key?' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
+		--prompt.foreground '{prompt_color}'"
+	primary_key_output = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	primary_key = primary_key_output.stdout.strip()
 
 	comparison_schema_output = subprocess.run("echo \"$DBT_SNOWFLAKE_TEST_SCHEMA\"", shell=True, check=True, stdout=subprocess.PIPE, text=True)
 	comparison_schema = comparison_schema_output.stdout.strip().lower()
@@ -288,30 +456,37 @@ def compare_objects():
 	
 	try:
 		subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd(), text=True)
-		utils.add_cmd_to_zsh_history(cmd)
+		add_cmd_to_zsh_history(cmd)
 	except subprocess.CalledProcessError:
 		console.print("An error occurred while running the dbt models", style="bold red")
-		utils.add_cmd_to_zsh_history(cmd)
+		add_cmd_to_zsh_history(cmd)
 		exit()
 
 @click.command("model-doc")
 @click.option('--is-star-statement', '-ss', is_flag=True, help="Generate documentation for a model whose last statement is a 'SELECT *' statement.")
 def model_doc(is_star_statement):
-	config = utils.load_config()
-	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = utils.load_theme(config)
+	config = load_config()
+	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = load_theme(config)
 
 	model_docs_location = Path('documentation/model_level/')
-	model_docs = utils.find_all_files_in_directory('python', model_docs_location, 'md')
+	model_docs = find_all_files_in_directory('python', model_docs_location, 'md')
 	model_docs = [x.split(".md")[0] for x in model_docs]
 
 	column_docs_location = Path('documentation/column_level/')
-	column_docs = utils.find_all_files_in_directory('python', column_docs_location, 'md')
+	column_docs = find_all_files_in_directory('python', column_docs_location, 'md')
 	column_docs = [x.split(".md")[0] for x in column_docs]
 
 	yaml_columns = []
 
-	models = utils.find_all_files_in_directory('zsh', 'models/', 'sql')
-	model_name = utils.gum_filter(models, "Select A Model To Document")
+	models = find_all_files_in_directory('zsh', 'models/', 'sql')
+
+
+	gum_models_filter = f"gum filter {models} --text.foreground '{prompt_color}' --indicator '{cursor_style}' --indicator.foreground '{cursor_color}'\
+			--header 'Select A Model To Document' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
+			--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10\
+			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
+	model_name_output = subprocess.run(gum_models_filter, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+	model_name = model_name_output.stdout.strip()
 	# Check if a .yml file already exists for the selected model
 	yml_search = subprocess.run(f"find models/ -type f -name '{model_name}.yml'", shell=True, check=True, stdout=subprocess.PIPE, text=True)
 	if yml_search.stdout == "":
@@ -361,6 +536,9 @@ def model_doc(is_star_statement):
 								cte_count += 1
 						elif type(token) is sqlparse.sql.IdentifierList:
 							for child_token in token.get_identifiers():
+								# print(f" token: {child_token.value}")
+								# print(f" token catch: {t_catch}")
+
 								if (
 									child_token.ttype is not sqlparse.tokens.Keyword
 									and not token_is_cte(child_token)
@@ -410,6 +588,7 @@ def model_doc(is_star_statement):
 		else:
 			returned_columns = final_cte
 
+		# print(returned_columns)
 		column_docs = [x.split(".md")[0] for x in column_docs]
 
 		for col in returned_columns:
@@ -418,6 +597,9 @@ def model_doc(is_star_statement):
 			else:
 				col_tuple = (col, False)
 			yaml_columns.append(col_tuple)
+
+		# print(yaml_columns)
+		# print(column_docs)
 
 		model = {
 			"version": 2,
