@@ -75,13 +75,11 @@ class ToolsUtils:
 		theme_output = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
 		theme = theme_output.stdout.strip()
 		theme_file = f"{theme}.yaml"
-		breakpoint()
 		
 
 		try:
-			theme_path = pkg_resources.resource_filename(__name__, theme_file)
-			breakpoint()
-			print(theme_path)
+			utils_path = Path(pkg_resources.resource_filename(__name__, ''))
+			theme_path = utils_path.parent / "themes" / theme_file
 			with open(theme_path) as stream:
 				try:
 					theme = yaml.safe_load(stream)
