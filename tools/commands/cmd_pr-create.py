@@ -1,5 +1,6 @@
 import click
 import subprocess
+import pkg_resources
 from pathlib import Path
 from tools.utils.tools_utils import ToolsUtils
 
@@ -14,8 +15,9 @@ def cli(is_cross_team):
 		pr_prefix += f"'{prefix}' "
 	pr_type = utils.gum_filter(pr_prefix, "What Type Of Pull Request Is This?")
 	pr_title = utils.gum_input("What Do You Want To Name This PR?")
-	template_dir_string = 'pull_request_templates'
-	template_dir = list(Path.cwd().glob(f'**/{template_dir_string}'))[0]
+	commands_dir = Path(pkg_resources.resource_filename(__name__, ''))
+	template_dir = commands_dir.parent / "pull_request_templates"
+
 	if is_cross_team:
 		template = "cross_team_template.md"
 	else:
