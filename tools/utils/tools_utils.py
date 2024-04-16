@@ -79,6 +79,7 @@ class ToolsUtils:
 
 		try:
 			theme_path = pkg_resources.resource_filename(__name__, theme_file)
+			breakpoint()
 			print(theme_path)
 			with open(theme_path) as stream:
 				try:
