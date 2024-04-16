@@ -6,11 +6,7 @@ from rich.console import Console
 from tools.utils.tools_utils import ToolsUtils
 
 console = Console()
-
-dev_path = Path("./tools/tools-config.yaml")
-prod_path = Path(".tools/tools-config.yaml")
-
-utils = ToolsUtils(dev_path, prod_path)
+utils = ToolsUtils()
 
 @click.command("run")
 @click.option('--prod', '-p', is_flag=True, help="Run the dbt Models in the production environment.")

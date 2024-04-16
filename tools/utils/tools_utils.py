@@ -8,11 +8,9 @@ from rich.console import Console
 from beaupy import confirm, prompt, select, Config
 
 class ToolsUtils:
-	def __init__(self, dev_path, prod_path):
+	def __init__(self):
 		self.console = Console()
-		self.dev_path = dev_path
-		self.prod_path = prod_path
-		pass
+		self.config_path = Path.home() / ".tools" / "tools-config.yaml"
 
 	def check_and_install_terminal_requirements(self):
 		# Check if Homebrew is installed, if not install it
@@ -54,12 +52,8 @@ class ToolsUtils:
 
 	def load_config(self):
 		try:
-			if self.dev_path.exists():
-				file_location = self.dev_path
-			elif self.prod_path.exists():
-				file_location = self.prod_path
-			else:
-				raise FileNotFoundError
+			if self.config_path.exists():
+				file_location = self.config_path
 			with open(f"{file_location}") as stream:
 				try:
 					config = yaml.safe_load(stream)
@@ -67,7 +61,7 @@ class ToolsUtils:
 					Config.raise_on_interrupt = config["general"]["raise-on-interrupt"]
 				except yaml.YAMLError as exc:
 					print(exc)
-		except FileNotFoundError:
+		except:
 			self.console.print("No tools-config.yaml File Found", style="bold red")
 			self.console.print("Run 'tools init' to create a tools-config.yaml file", style="cyan")
 			exit()
@@ -168,6 +162,19 @@ class ToolsUtils:
 		sanitize_placeholder = placeholder.replace("'", "'\\''")
 		gum_input = f"gum input --header '{sanitize_header}' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
 			--prompt.foreground '{prompt_color}' --value '{sanitize_placeholder}'"
+		gum_input_process = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+		gum_input_output = gum_input_process.stdout.strip()
+
+		return gum_input_output
+	
+	def init_input(self, header, placeholder=None):
+		if placeholder:
+			pass 
+		else:
+			placeholder = ""
+		sanitize_header = header.replace("'", "'\\''")
+		sanitize_placeholder = placeholder.replace("'", "'\\''")
+		gum_input = f"gum input --header '{sanitize_header}' --width 65 --value '{sanitize_placeholder}'"
 		gum_input_process = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 		gum_input_output = gum_input_process.stdout.strip()
 

@@ -8,11 +8,7 @@ from beaupy import confirm, prompt, select
 from tools.utils.tools_utils import ToolsUtils
 
 console = Console()
-
-dev_path = Path("./tools/tools-config.yaml")
-prod_path = Path(".tools/tools-config.yaml")
-
-utils = ToolsUtils(dev_path, prod_path)
+utils = ToolsUtils()
 
 # TODO: Refactor using Gum commands
 @click.command("branch-new")

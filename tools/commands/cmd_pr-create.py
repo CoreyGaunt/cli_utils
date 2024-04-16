@@ -3,10 +3,7 @@ import subprocess
 from pathlib import Path
 from tools.utils.tools_utils import ToolsUtils
 
-dev_path = Path("./tools/tools-config.yaml")
-prod_path = Path(".tools/tools-config.yaml")
-
-utils = ToolsUtils(dev_path, prod_path)
+utils = ToolsUtils()
 
 @click.command("pr-create")
 @click.option('--is-cross-team', '-c', is_flag=True, help="Create a cross-team pull request.")

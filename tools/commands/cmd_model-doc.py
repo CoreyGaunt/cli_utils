@@ -9,11 +9,7 @@ from sqlparse.tokens import Whitespace
 from tools.utils.tools_utils import ToolsUtils
 
 console = Console()
-
-dev_path = Path("./tools/tools-config.yaml")
-prod_path = Path(".tools/tools-config.yaml")
-
-utils = ToolsUtils(dev_path, prod_path)
+utils = ToolsUtils()
 
 @click.command("model-doc")
 @click.option('--is-star-statement', '-ss', is_flag=True, help="Generate documentation for a model whose last statement is a 'SELECT *' statement.")

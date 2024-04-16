@@ -5,11 +5,7 @@ from rich.console import Console
 from tools.utils.tools_utils import ToolsUtils
 
 console = Console()
-
-dev_path = Path("./tools/tools-config.yaml")
-prod_path = Path(".tools/tools-config.yaml")
-
-utils = ToolsUtils(dev_path, prod_path)
+utils = ToolsUtils()
 
 @click.command("compare-objects")
 def cli():

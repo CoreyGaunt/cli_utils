@@ -2,16 +2,18 @@ import sys
 import click
 import importlib
 from pathlib import Path
+from tools.tools_config import init_tools
 from tools.utils.tools_utils import ToolsUtils
 
+config_path = Path.home() / ".tools" / "tools-config.yaml"
 
+if not config_path.exists():
+	init_tools()
 
-dev_path = Path("./tools/tools-config.yaml")
-prod_path = Path(".tools/tools-config.yaml")
-
-utils = ToolsUtils(dev_path, prod_path)
+utils = ToolsUtils()
 
 config = utils.load_config()
+
 excluded_commands = [x for x in config['excluded-commands']]
 commands_dir = Path.cwd() / "tools" / "commands"
 commands = [x.stem for x in commands_dir.glob("*.py") if x.stem not in excluded_commands]
@@ -24,6 +26,7 @@ def cli():
 	"""
 	This is a command line tool that helps with common git and python tasks.
 	"""
+    
 	pass
 
 # Import commands from the list of py files in commands
