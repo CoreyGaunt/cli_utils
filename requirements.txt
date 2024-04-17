@@ -1,0 +1,4 @@
+click >=8.1, <9.0
+sqlparse >= 0.4
+beaupy >= 3.7
+rich >= 13.0

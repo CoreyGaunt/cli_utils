@@ -1,19 +1,35 @@
 import os 
 import re
 import yaml
-import shlex
 import subprocess
+import pkg_resources
 from pathlib import Path
 from rich.console import Console
 from beaupy import confirm, prompt, select, Config
 
 class ToolsUtils:
-	def __init__(self, dev_path, prod_path):
+	def __init__(self):
 		self.console = Console()
-		self.dev_path = dev_path
-		self.prod_path = prod_path
-		pass
+		self.config_path = Path.home() / ".tools" / "tools-config.yaml"
 
+	def check_and_install_terminal_requirements(self):
+		# Check if Homebrew is installed, if not install it
+		homebrew_check = subprocess.run("brew --version", shell=True, check=False, stdout=subprocess.PIPE, text=True)
+		if homebrew_check.returncode != 0:
+			self.console.print("Homebrew Not Found, Installing Homebrew", style="bold red")
+			subprocess.run("/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+			self.console.print("Homebrew Installed", style="bold green")
+		else:
+			self.console.print("Homebrew Found", style="bold green")
+		# Check if Gum is installed, if not install it
+		gum_check = subprocess.run("gum --version", shell=True, check=False, stdout=subprocess.PIPE, text=True)
+		if gum_check.returncode != 0:
+			self.console.print("Gum Not Found, Installing Gum", style="bold red")
+			subprocess.run("brew install gum", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+			self.console.print("Gum Installed", style="bold green")
+		else:
+			self.console.print("Gum Found", style="bold green")
+			
 	def add_cmd_to_zsh_history(self, cmd):
 		with open(Path.home() / ".zsh_history", "a") as history_file:
 			history_file.write(f"{cmd}\n")
@@ -36,12 +52,8 @@ class ToolsUtils:
 
 	def load_config(self):
 		try:
-			if self.dev_path.exists():
-				file_location = self.dev_path
-			elif self.prod_path.exists():
-				file_location = self.prod_path
-			else:
-				raise FileNotFoundError
+			if self.config_path.exists():
+				file_location = self.config_path
 			with open(f"{file_location}") as stream:
 				try:
 					config = yaml.safe_load(stream)
@@ -49,7 +61,7 @@ class ToolsUtils:
 					Config.raise_on_interrupt = config["general"]["raise-on-interrupt"]
 				except yaml.YAMLError as exc:
 					print(exc)
-		except FileNotFoundError:
+		except:
 			self.console.print("No tools-config.yaml File Found", style="bold red")
 			self.console.print("Run 'tools init' to create a tools-config.yaml file", style="cyan")
 			exit()
@@ -58,22 +70,16 @@ class ToolsUtils:
 	def load_theme(self, config):
 	
 		config_theme = config["theme"]["name"]
-		dev_path = "./tools/themes"
-		prod_path = ".tools/themes"
 		cmd = f"echo {config_theme}"
 		theme_output = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
 		theme = theme_output.stdout.strip()
-		dev_theme = Path(f"{dev_path}/{theme}.yaml")
-		prod_theme = Path(f"{prod_path}/{theme}.yaml")
+		theme_file = f"{theme}.yaml"
+		
 
 		try:
-			if dev_theme.exists():
-				file_location = dev_theme
-			elif prod_theme.exists():
-				file_location = prod_theme
-			else:
-				raise FileNotFoundError
-			with open(f"{file_location}") as stream:
+			utils_path = Path(pkg_resources.resource_filename(__name__, ''))
+			theme_path = utils_path.parent / "themes" / theme_file
+			with open(theme_path) as stream:
 				try:
 					theme = yaml.safe_load(stream)
 				except yaml.YAMLError as exc:
@@ -93,7 +99,7 @@ class ToolsUtils:
 		
 		return primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt
 	
-	def remove_color_indicators(string):
+	def remove_color_indicators(self, string):
 		# Define a regular expression pattern to match color indicators
 		rgb_pattern = r'\[/?[a-zA-Z]+\s*[a-zA-Z]*\]'
 		
@@ -139,11 +145,30 @@ class ToolsUtils:
 
 		return gum_filter_output
 	
-	def gum_input(self, header):
+	def gum_input(self, header, placeholder=None):
 		config = self.load_config()
 		primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = self.load_theme(config)
-		gum_input = f"gum input --header '{header}' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
-			--prompt.foreground '{prompt_color}'"
+		if placeholder:
+			pass 
+		else:
+			placeholder = ""
+		sanitize_header = header.replace("'", "'\\''")
+		sanitize_placeholder = placeholder.replace("'", "'\\''")
+		gum_input = f"gum input --header '{sanitize_header}' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
+			--prompt.foreground '{prompt_color}' --value '{sanitize_placeholder}'"
+		gum_input_process = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
+		gum_input_output = gum_input_process.stdout.strip()
+
+		return gum_input_output
+	
+	def init_input(self, header, placeholder=None):
+		if placeholder:
+			pass 
+		else:
+			placeholder = ""
+		sanitize_header = header.replace("'", "'\\''")
+		sanitize_placeholder = placeholder.replace("'", "'\\''")
+		gum_input = f"gum input --header '{sanitize_header}' --width 65 --value '{sanitize_placeholder}'"
 		gum_input_process = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 		gum_input_output = gum_input_process.stdout.strip()
 
@@ -172,16 +197,6 @@ class ToolsUtils:
 
 		return gum_choose_output
 	
-	def gum_input(self, header):
-		config = self.load_config()
-		primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = self.load_theme(config)
-		gum_input = f"gum input --header '{header}' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
-		--prompt.foreground '{secondary_color}'"
-		gum_input_process = subprocess.run(gum_input, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
-		gum_input_output = gum_input_process.stdout.strip()
-
-		return gum_input_output
-	
 	def gum_write(self, header, templated_text=None):
 		config = self.load_config()
 		primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = self.load_theme(config)
@@ -192,7 +207,6 @@ class ToolsUtils:
 		gum_write = f"gum write --header '{header}' --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}'\
 		--prompt.foreground '{secondary_color}' --char-limit 0 --value '{body_from_env}' --width 65 --height 10"
 		gum_write_process = subprocess.run(gum_write, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
-		gum_write_output_raw = gum_write_process.stdout.strip()
-		gum_write_output = shlex.quote(gum_write_output_raw)
+		gum_write_output = gum_write_process.stdout.strip()
 
 		return gum_write_output

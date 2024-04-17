@@ -1,4 +1,6 @@
-from setuptools import setup, find_packages
+from pathlib import Path
+from setuptools import setup, find_packages, find_namespace_packages
+
 """ 
 look into curses for the terminal UI
 
@@ -16,19 +18,14 @@ https://fig.io/docs/getting-started/first-completion-spec
 
 setup(
 	name='tools',
-	version='0.1.0',
-	packages=find_packages(include=['tools', 'tools.*']),
-	package_data={"": ["*.yaml"]},
+	version='0.1.4',
+	packages=find_namespace_packages(include=["tools", "tools*"]),
+	package_data={"": ["*.yaml", "*.txt", "*.md"]},
 	author="Corey Gaunt",
 	url="https://github.com/CoreyGaunt/cli_utils",
-	install_requires=[
-		'click',
-		'rich',
-		'beaupy',
-		'pyyaml'
-	],
 	entry_points='''
 		[console_scripts]
-		tools=tools.tools:cli
+		tools=tools.cli:cli
 	''',
+	install_requires=Path("requirements.txt").read_text().splitlines(),
 )

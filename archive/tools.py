@@ -34,10 +34,14 @@ def init():
 	Then it will create a kit_config.yaml file in the .kit directory.
 	"""
 	Path(".tools").mkdir(exist_ok=True)
+	# Check if Homebrew is installed, if not, install it
+
+	team_tag = utils.gum_input("What is your team's Linear Tag?", "DSA")
+	team_name = utils.gum_input("What is your team's name?", "Data Science & Analytics")
 	with open(".tools/tools-config.yaml", "w") as file:
 		file.write("general:\n")
-		file.write("  team-tag: \n")
-		file.write("  team-name: \n")
+		file.write(f'  team-tag: "{team_tag}"\n')
+		file.write(f'  team-name: "{team_name}"\n')
 		file.write("  raise-on-escape: true\n")
 		file.write("  raise-on-interrupt: true\n")
 		file.write("commits:\n")
@@ -56,7 +60,9 @@ def init():
 		file.write("  s3-dag-location: ''\n")
 		file.write("  s3-plugins-location: ''")
 		file.write("theme:\n")
-		file.write("  name: '$TERMINAL_THEME'\n")
+		file.write("  name: 'iron_gold'\n")
+		file.write("excluded-commands:\n")
+		file.write("  - cmd_s3_sync\n")
 	console.print("Initialized .kit Directory", style="bold green")
 
 @click.command("commit")
@@ -182,16 +188,15 @@ def pr_create(is_cross_team):
 		pr_prefix += f"'{prefix}' "
 	pr_type = utils.gum_filter(pr_prefix, "What Type Of Pull Request Is This?")
 	pr_title = utils.gum_input("What Do You Want To Name This PR?")
-	# Get the PR body from the environment variable and echo newlines
+	template_dir_string = 'pull_request_templates'
+	template_dir = list(Path.cwd().glob(f'**/{template_dir_string}'))[0]
 	if is_cross_team:
-		body_from_env = subprocess.run("echo \"$MISC_PULL_REQUEST_TEMPLATE\"", shell=True, check=True, stdout=subprocess.PIPE, text=True)
+		template = "cross_team_template.md"
 	else:
-		body_from_env = subprocess.run("echo \"$DATA_AND_ANALYTICS_PULL_REQUEST_TEMPLATE\"", shell=True, check=True, stdout=subprocess.PIPE, text=True)
-	if body_from_env.returncode != 0:
-		console.print("No PULL_REQUEST_TEMPLATE environment variable found", style="bold red")
-		exit()
-	body_from_env = body_from_env.stdout.strip()
-	pr_body = utils.gum_write("What Did You Do?", body_from_env)
+		template = "data_science_and_analytics_template.md"
+	template_file = template_dir / template
+	pr_body_from_env = template_file.read_text()
+	pr_body = utils.gum_write("What Did You Do?", pr_body_from_env)
 	# handle special characters in pr_body that would cause in error
 	cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {pr_title}' --body '{pr_body}' --draft"
 	subprocess.run(cmd1, shell=True, cwd=Path.cwd())
