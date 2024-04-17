@@ -14,6 +14,13 @@ utils = ToolsUtils()
 @click.option('--downstream', '-d', default='', is_flag=False, flag_value='+', help="Run specified model & its children models. You can also specify the number of levels to go up. E.g. <model_name>+1 or <model_name>+2. Defaults to <model_name>+.")
 @click.option('--waterfall', '-a', is_flag=True, help="Run the specified model, its children models, and the parents of its children models. Leverages the '@' dbt operator. NOTE - This command cannot be run alongside --upstream or --downstream.")
 def cli(prod, upstream, downstream, waterfall):
+	"""
+	Run dbt models in the local environment, or the production environment if the --prod flag is set.
+
+	This command will scan the models directory for .sql files and prompt you to select a model to run. You can also specify the number of upstream or downstream models to run alongside the selected model. If the --waterfall flag is set, it will run the selected model, its children models, and the parents of its children models.
+
+	When the command completes (whether successful or not), it will add the generated bash command to your zsh history.
+	"""
 	config = utils.load_config()
 	prefix, suffix = '', ''
 

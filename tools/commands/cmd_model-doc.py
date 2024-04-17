@@ -14,6 +14,13 @@ utils = ToolsUtils()
 @click.command("model-doc")
 @click.option('--is-star-statement', '-ss', is_flag=True, help="Generate documentation for a model whose last statement is a 'SELECT *' statement.")
 def cli(is_star_statement):
+	"""
+	IN DEVELOPMENT! Creates a .yml file for a selected model.
+
+	This command will scan the selected model file for column names and generate a .yml file for the selected model. If a .yml file already exists for the selected model, it will notify you and exit.
+
+	It currently works best for models that have a final select statement with unaliased columns without any transformations.
+	"""
 	config = utils.load_config()
 	primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = utils.load_theme(config)
 
