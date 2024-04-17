@@ -8,8 +8,14 @@ utils = ToolsUtils()
 @click.command("commit")
 def cli():
 	"""
-	This command is used to commit all the changes in the current directory.
-	It also asks for a commit message following the Conventional Commits standard.
+	Constructs a commit to your remote branch.
+
+	This commands asks for a commit message following the Conventional Commits standards. The options for the commit type are stored in the user's home .tools/tools-config.yaml file.
+
+	The interactive prompt will ask you if you'd like to commit all of your changes. If you choose to commit all changes, it will add all files, ask for your commit message, commit the changes, and push them to the remote repository.
+	If you choose not to commit all changes, it will list all the files that have been changed and ask you to select which files you'd like to add to the commit.
+
+	You add a file by selecting it with the tab key. Once you've selected all the files you'd like to add, you can press enter to continue. It will then ask you for a commit message and commit the changes.
 	"""
 	config = utils.load_config()
 	gum_confirm_output = utils.gum_confirm("Do you want to commit all changes?")

@@ -9,6 +9,15 @@ utils = ToolsUtils()
 
 @click.command("compare-objects")
 def cli():
+	"""
+	Compare the objects in the current schema with the objects in the production schema.
+
+	The interactive prompt will ask you to select a schema and a model to compare. The models shown are dependent on the schema you select.
+
+	Once you've selected a model, you will be asked for the primary key of the model. This is used to compare the objects in the schema with the production schema.
+
+	After the command is run, it will output the differences between the two objects as a sql query. Upon completion, the generated bash command will be added to your zsh history.
+	"""
 	config = utils.load_config()
 	schemas = "'utilities' 'sources' 'transform' 'dw'"
 	mart_schemas_output = subprocess.run("find models/4_marts/ -type d -name 'mart_*' -exec basename {} \;", shell=True, check=True, stdout=subprocess.PIPE, text=True)

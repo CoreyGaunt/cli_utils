@@ -14,7 +14,15 @@ utils = ToolsUtils()
 @click.command("branch-new")
 def cli():
 	"""
-	This command is used to create a new branch.
+	Create new branch from latest default.
+	
+	This command checks out your default branch, pulls down the latest changes, then begins an interactive walkthrough for branch creation.
+
+	It will prompt you for the branch type (which is generated from your user's home .tools/tools-config.yaml file). Ask if there is a corresponding Linear ticket for your work,
+	if there is, it will take in the ticket number plus your team's tag (also from the user's home .tools/tools-config.yaml file) and add it to the branch name.
+	Finally, it asks your for the name of your branch.
+
+	Once all the information is gathered, it will create the branch and push it to the remote repository.
 	"""
 	config = utils.load_config()
 	primary_color, secondary_color, _, _, prompt_color, cursor_style, cursor_color, _ = utils.load_theme(config)
