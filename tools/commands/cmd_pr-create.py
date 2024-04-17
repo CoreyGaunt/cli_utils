@@ -1,5 +1,4 @@
 import click
-import shlex
 import subprocess
 import pkg_resources
 from pathlib import Path
@@ -25,8 +24,15 @@ def cli(is_cross_team):
 		template = "data_science_and_analytics_template.md"
 	template_file = template_dir / template
 	pr_body_from_env = template_file.read_text()
-	pr_body_from_env = shlex.quote(pr_body_from_env)
 	pr_body = utils.gum_write("What Did You Do?", pr_body_from_env)
 	# handle special characters in pr_body that would cause in error
-	cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {pr_title}' --body '{pr_body}' --draft"
-	subprocess.run(cmd1, shell=True, cwd=Path.cwd())
+	try:
+		cmd1 = f"gh pr create --title '[{pr_type.upper()}] - {pr_title}' --body '{pr_body}' --draft"
+		subprocess.run(cmd1, shell=True, cwd=Path.cwd(), check=True)
+	except Exception as e:
+		print("Attempting to create pull request without --draft flag")
+		try:
+			cmd2 = f"gh pr create --title '[{pr_type.upper()}] - {pr_title}' --body '{pr_body}'"
+			subprocess.run(cmd2, shell=True, cwd=Path.cwd())
+		except Exception as e:
+			exit()
