@@ -9,13 +9,19 @@ console = Console()
 utils = ToolsUtils()
 
 @click.command("run")
-@click.option('--prod', '-p', is_flag=True, help="Run the dbt Models in the production environment.")
+#@click.option('--prod', '-p', is_flag=True, help="Run the dbt Models in the production environment.")
+# , or the production environment if the --prod flag is set.
 @click.option('--upstream', '-u', default='', is_flag=False, flag_value='+', help="Run the specified model & its parent models. You can also specify the number of levels to go up. E.g. 1+<model_name> or 2+<model_name>. Defaults to +<model_name>.")
 @click.option('--downstream', '-d', default='', is_flag=False, flag_value='+', help="Run specified model & its children models. You can also specify the number of levels to go up. E.g. <model_name>+1 or <model_name>+2. Defaults to <model_name>+.")
 @click.option('--waterfall', '-a', is_flag=True, help="Run the specified model, its children models, and the parents of its children models. Leverages the '@' dbt operator. NOTE - This command cannot be run alongside --upstream or --downstream.")
-def cli(prod, upstream, downstream, waterfall):
+def cli(
+	# prod,
+	upstream,
+	downstream,
+	waterfall
+):
 	"""
-	Run dbt models in the local environment, or the production environment if the --prod flag is set.
+	Run dbt models in the local environment.
 
 	This command will scan the models directory for .sql files and prompt you to select a model to run. You can also specify the number of upstream or downstream models to run alongside the selected model. If the --waterfall flag is set, it will run the selected model, its children models, and the parents of its children models.
 
@@ -58,6 +64,7 @@ def cli(prod, upstream, downstream, waterfall):
 	model_string = f"{prefix}{model_name}{suffix}"
 
 	if prod:
+		# prod_password = utils.gum_input
 		cmd = f"dbt run -s {model_string} --target prod"
 	else:
 		cmd = f"dbt run -s {model_string}"

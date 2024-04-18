@@ -20,7 +20,7 @@ def cli(ci_cd):
 	if ci_cd:
 		environment = "CI/CD"
 		console.print("Resetting schemas in the CI/CD environment...", style=f"bold {primary_color}")
-		cmd = "dbt run-operation prod_to_ci_cd_copy_schemas && dbt run -s config.materialized:view --target github"
+		cmd = "dbt run-operation prod_to_ci_cd_copy_schemas --target prod && dbt run -s config.materialized:view --target github"
 	else:
 		environment = "Local"
 		console.print("Resetting schemas in the local environment...", style=f"bold {primary_color}")
@@ -29,7 +29,7 @@ def cli(ci_cd):
 	if not confirm_reset:
 		console.print("Reset operation aborted!!", style="bold red")
 		exit()
-	reset_outcome = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
+	reset_outcome = subprocess.run(cmd, shell=True, check=True, cwd=Path.cwd(), text=True)
 	if reset_outcome.returncode == 0:
 		console.print("Schemas reset successfully!", style=f"bold {primary_color}")
 	else:
