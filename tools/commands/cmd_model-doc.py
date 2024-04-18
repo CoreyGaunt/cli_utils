@@ -60,27 +60,12 @@ def cli(is_star_statement):
 		parsed = sqlparse.parse(raw_sql)
 		for statement in parsed:
 			aliases = []
-			final_cte = []
-			cte_count = 0
 			if statement.get_type() in ["SELECT", "UNKNOWN"]:
-				non_whitespace_tokens = [x for x in statement.tokens if x.ttype is not Whitespace and x.ttype is not sqlparse.tokens.Newline]
-				for i in range(len(non_whitespace_tokens)):
-					if non_whitespace_tokens[i].ttype is sqlparse.tokens.Keyword.DML and non_whitespace_tokens[i].value.upper() == "SELECT":
-						if (
-							non_whitespace_tokens[i+1].ttype is sqlparse.tokens.Wildcard
-							and type(non_whitespace_tokens[i-1]) is sqlparse.sql.Parenthesis
-						):
-							is_last_statement_a_star = True
-						else:
-							is_last_statement_a_star = False
-				parenth_token_total = len([x for x in statement.tokens if type(x) is sqlparse.sql.Parenthesis])
-				parenth_token_count = 0
-				print(parenth_token_total)
 				for token in statement.tokens:
 					if token.ttype is None and type(token) is not sqlparse.sql.Function:
 						if type(token) is sqlparse.sql.Identifier:
 							if not token_is_cte(token):
-								aliases.append(token.get_name())
+								aliases.append(token)
 							else:
 								cte_count += 1
 						elif type(token) is sqlparse.sql.IdentifierList:
@@ -88,51 +73,42 @@ def cli(is_star_statement):
 								if (
 									child_token.ttype is not sqlparse.tokens.Keyword
 									and not token_is_cte(child_token)
-									and child_token.get_name() is not None
+									# and child_token.get_name() is not None
 								):
-									child_token = check_for_real_name(child_token)
-									if child_token[1]:
-										new_name = child_token[0]
-										try:
-											new_name = child_token[0].split(".")[1]
-										except:
-											pass
-										aliases.append(new_name)
-						if type(token) is sqlparse.sql.Parenthesis:
-							parenth_token_count += 1
-							if parenth_token_count == parenth_token_total:
-								parenth_key_staging = []
-								for child_token in token.tokens:
-									if not child_token.ttype is Whitespace:
-										parenth_key_staging.append(child_token)
-								for i in range(len(parenth_key_staging)):
-									if (
-										isinstance(parenth_key_staging[i], sqlparse.sql.Identifier)
-										and parenth_key_staging[i-1].value != "from"
-									):
-										child_token = check_for_real_name(parenth_key_staging[i])
-										if child_token[1]:
-											new_name = child_token[0]
-										try:
-											new_name = child_token[0].split(".")[1]
-										except:
-											pass
-										final_cte.append(new_name)
-									elif parenth_key_staging[i].ttype is None and type(parenth_key_staging[i]) is sqlparse.sql.IdentifierList:
-										for grandchild_token in parenth_key_staging[i].get_identifiers():
-											column_name = check_for_real_name(grandchild_token)
-											if column_name[1]:
-												new_name = column_name[0]
-											try:
-												new_name = column_name[0].split(".")[1]
-											except:
-												pass
-											final_cte.append(new_name)
-		if is_last_statement_a_star == False:
-			# returned_columns = aliases.pop()
-			returned_columns = aliases
-		else:
-			returned_columns = final_cte
+									aliases.append(child_token)
+						# if type(token) is sqlparse.sql.Parenthesis:
+						# 	parenth_token_count += 1
+						# 	if parenth_token_count == parenth_token_total:
+						# 		parenth_key_staging = []
+						# 		for child_token in token.tokens:
+						# 			if not child_token.ttype is Whitespace:
+						# 				parenth_key_staging.append(child_token)
+						# 		for i in range(len(parenth_key_staging)):
+						# 			if (
+						# 				isinstance(parenth_key_staging[i], sqlparse.sql.Identifier)
+						# 				and parenth_key_staging[i-1].value != "from"
+						# 			):
+						# 				child_token = check_for_real_name(parenth_key_staging[i])
+						# 				if child_token[1]:
+						# 					new_name = child_token[0]
+						# 				try:
+						# 					new_name = child_token[0].split(".")[1]
+						# 				except:
+						# 					pass
+						# 				final_cte.append(new_name)
+						# 			elif parenth_key_staging[i].ttype is None and type(parenth_key_staging[i]) is sqlparse.sql.IdentifierList:
+						# 				for grandchild_token in parenth_key_staging[i].get_identifiers():
+						# 					column_name = check_for_real_name(grandchild_token)
+						# 					if column_name[1]:
+						# 						new_name = column_name[0]
+						# 					try:
+						# 						new_name = column_name[0].split(".")[1]
+						# 					except:
+						# 						pass
+						# 					final_cte.append(new_name)
+			returned_columns = []
+			for alias in aliases:
+				returned_columns.append(alias.get_name())
 
 		column_docs = [x.split(".md")[0] for x in column_docs]
 
@@ -169,28 +145,7 @@ def token_is_cte(token: sqlparse.sql.Token) -> bool:
         bool: True if the token is a CTE name, False otherwise
     """
     _, next_token = token.token_next(1)
-    t_catch = "iff(" in token.value or "case " in token.value
-    if t_catch:
-        next_token = None
     return next_token and next_token.value == "as"
-
-def check_for_real_name(token: sqlparse.sql.Token) -> sqlparse.sql.Token:
-	t_value = token.value 
-	t_value = re.sub(f"--.*", "", t_value)
-	if " as " in t_value:
-		real_name = t_value.split(" as ")[1]
-		is_real = True
-	elif (
-		"()" in t_value
-		or " " in t_value
-	):
-		real_name = t_value
-		is_real = False
-	else:
-		real_name = t_value
-		is_real = True
-
-	return (real_name, is_real)
 
 def generate_yaml_columns(yaml_columns):
 	columns = []
