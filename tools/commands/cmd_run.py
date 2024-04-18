@@ -63,6 +63,8 @@ def cli(
 	model_name = utils.gum_filter(model_list, "Select A Model To Run")
 	model_string = f"{prefix}{model_name}{suffix}"
 
+	prod = False
+
 	if prod:
 		# prod_password = utils.gum_input
 		cmd = f"dbt run -s {model_string} --target prod"
