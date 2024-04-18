@@ -1,4 +1,5 @@
 import re
+import os
 import click
 import subprocess
 from pathlib import Path
@@ -9,19 +10,20 @@ console = Console()
 utils = ToolsUtils()
 
 @click.command("run")
-#@click.option('--prod', '-p', is_flag=True, help="Run the dbt Models in the production environment.")
-# , or the production environment if the --prod flag is set.
+@click.option('--prod', '-p', is_flag=True, help="Run the dbt Models in the production environment.")
 @click.option('--upstream', '-u', default='', is_flag=False, flag_value='+', help="Run the specified model & its parent models. You can also specify the number of levels to go up. E.g. 1+<model_name> or 2+<model_name>. Defaults to +<model_name>.")
 @click.option('--downstream', '-d', default='', is_flag=False, flag_value='+', help="Run specified model & its children models. You can also specify the number of levels to go up. E.g. <model_name>+1 or <model_name>+2. Defaults to <model_name>+.")
 @click.option('--waterfall', '-a', is_flag=True, help="Run the specified model, its children models, and the parents of its children models. Leverages the '@' dbt operator. NOTE - This command cannot be run alongside --upstream or --downstream.")
 def cli(
-	# prod,
+	prod,
 	upstream,
 	downstream,
 	waterfall
 ):
 	"""
-	Run dbt models in the local environment.
+	Run dbt models in the local environment, or the production environment if the --prod flag is set.
+
+	Production access is granted by Analytics Engineering. Please reach out to the team if you need access.
 
 	This command will scan the models directory for .sql files and prompt you to select a model to run. You can also specify the number of upstream or downstream models to run alongside the selected model. If the --waterfall flag is set, it will run the selected model, its children models, and the parents of its children models.
 
@@ -63,10 +65,11 @@ def cli(
 	model_name = utils.gum_filter(model_list, "Select A Model To Run")
 	model_string = f"{prefix}{model_name}{suffix}"
 
-	prod = False
-
 	if prod:
-		# prod_password = utils.gum_input
+		prod_password = os.environ.get("LP_PRODUCTION_KEY")
+		if not prod_password:
+			console.print("Access Denied to Run Production Locally", style="bold red")
+			exit()
 		cmd = f"dbt run -s {model_string} --target prod"
 	else:
 		cmd = f"dbt run -s {model_string}"
