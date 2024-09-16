@@ -37,7 +37,7 @@ def cli():
 		)
 	branch_type = utils.remove_color_indicators(branch_type)
 	has_corresponding_ticket = confirm(
-		question=f"[{prompt_color}]Does this branch have a corresponding Linear ticket?[/{prompt_color}]",
+		question=f"[{prompt_color}]Does this branch have a corresponding ticket?[/{prompt_color}]",
 		cursor=cursor_style,
 		cursor_style=cursor_color
 		)
