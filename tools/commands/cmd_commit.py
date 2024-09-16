@@ -26,9 +26,11 @@ def cli():
 		cmd1 = "git add ."
 		cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
 		cmd3 = "git push"
+		# cmd4 = "make build"
 		subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
+		# subprocess.run(cmd4, shell=True, check=True, cwd=Path.cwd())
 	else:
 		# list all files that have been changed
 		files = ""
@@ -46,6 +48,8 @@ def cli():
 		commit_type, commit_message = utils.commit_type_and_message()
 		cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
 		cmd3 = "git push"
+		# cmd4 = "make build"
 		subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
 		subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
+		# subprocess.run(cmd4, shell=True, check=True, cwd=Path.cwd())

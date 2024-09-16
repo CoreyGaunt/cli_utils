@@ -61,7 +61,7 @@ def cli(
 	# Anchor to the target directory models/
 	# Recursively list all .sql files in the target directory
 	# Format each file to only show the basename and trim the file extension
-	model_list = utils.find_all_files_in_directory('zsh', 'models/', 'sql')
+	model_list = utils.find_all_files_in_directory('zsh', 'dbt/models/', 'sql')
 	model_name = utils.gum_filter(model_list, "Select A Model To Run")
 	model_string = f"{prefix}{model_name}{suffix}"
 

@@ -204,8 +204,10 @@ class ToolsUtils:
 			body_from_env = templated_text
 		else:
 			body_from_env = " "
-		gum_write = f"gum write --header '{header}' --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}'\
-		--prompt.foreground '{secondary_color}' --char-limit 0 --value '{body_from_env}' --width 65 --height 10"
+		gum_write = f"""
+		gum write --header '{header}' --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}'\
+		--prompt.foreground '{secondary_color}' --char-limit 0 --value $'{body_from_env}' --width 65 --height 10
+		"""
 		gum_write_process = subprocess.run(gum_write, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, text=True)
 		gum_write_output = gum_write_process.stdout.strip()
 
