@@ -63,7 +63,6 @@ class ToolsUtils:
 					print(exc)
 		except:
 			self.console.print("No tools-config.yaml File Found", style="bold red")
-			self.console.print("Run 'tools init' to create a tools-config.yaml file", style="cyan")
 			exit()
 		return config
 	

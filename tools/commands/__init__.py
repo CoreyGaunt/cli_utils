@@ -7,5 +7,3 @@ from .cmd_reset_schemas import cli as reset_schemas
 from .cmd_run import cli as run
 from .cmd_s3_sync import cli as s3_sync
 from .cmd_theme_select import cli as theme_select
-
-
