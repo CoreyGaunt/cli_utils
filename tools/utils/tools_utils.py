@@ -141,7 +141,7 @@ class ToolsUtils:
 			--header '{header}' --header.foreground '{primary_color}' --prompt '{filter_prompt}' --prompt.foreground '{quaternary_color}'\
 			--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10 --no-limit\
 			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
-		gum_filter_process = self._enable_cmd_abort(gum_filter)
+		gum_filter_process = self._enable_cmd_abort(gum_filter, quaternary_color)
 		gum_filter_output = gum_filter_process.stdout.strip()
 
 		return gum_filter_output
@@ -157,7 +157,7 @@ class ToolsUtils:
 		sanitize_placeholder = placeholder.replace("'", "'\\''")
 		gum_input = f"gum input --header '{sanitize_header}' --width 65 --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}' --prompt '{cursor_style}'\
 			--prompt.foreground '{prompt_color}' --value '{sanitize_placeholder}'"
-		gum_input_process = self._enable_cmd_abort(gum_input)
+		gum_input_process = self._enable_cmd_abort(gum_input, quaternary_color)
 		gum_input_output = gum_input_process.stdout.strip()
 
 		return gum_input_output
@@ -181,7 +181,7 @@ class ToolsUtils:
 		gum_confirm = f"gum confirm '{message}' --prompt.foreground '{primary_color}'\
 		--selected.background '{secondary_color}' --unselected.background '{tertiary_color}'"
 		try:
-			gum_confirm_process = self._enable_cmd_abort(gum_confirm)
+			gum_confirm_process = self._enable_cmd_abort(gum_confirm, quaternary_color)
 			gum_confirm_output = True 
 		except subprocess.CalledProcessError:
 			gum_confirm_output = False
@@ -193,7 +193,7 @@ class ToolsUtils:
 		primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = self.load_theme(config)
 		gum_choose = f"gum choose {choices} --ordered --cursor '{cursor_style}' --cursor.foreground '{quaternary_color}'\
 		--item.foreground '{tertiary_color}'"
-		gum_choose_process = self._enable_cmd_abort(gum_choose)
+		gum_choose_process = self._enable_cmd_abort(gum_choose, quaternary_color)
 		gum_choose_output = gum_choose_process.stdout.strip()
 
 		return gum_choose_output
@@ -209,18 +209,18 @@ class ToolsUtils:
 		gum write --header '{header}' --header.foreground '{primary_color}' --cursor.foreground '{cursor_color}'\
 		--prompt.foreground '{secondary_color}' --char-limit 0 --value $'{body_from_env}' --width 65 --height 10
 		"""
-		gum_write_process = self._enable_cmd_abort(gum_write)
+		gum_write_process = self._enable_cmd_abort(gum_write, quaternary_color)
 		gum_write_output = gum_write_process.stdout.strip()
 
 		return gum_write_output
 
-	def _enable_cmd_abort(self, cmd):
+	def _enable_cmd_abort(self, cmd, color="bold red"):
 		try:
 			ran_process = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
 			return ran_process
 		except subprocess.CalledProcessError as e:
 			if e.returncode == 130:
-				self.console.print("Aborted!", style="bold red")
+				self.console.print("Aborted!", style=color)
 			else:
-				self.console.print(f"Error: {e}", style="bold red")
+				self.console.print(f"Error: {e}", style=color)
 			sys.exit(1)
