@@ -78,7 +78,7 @@ class ToolsUtils:
 		
 
 		try:
-			utils_path = Path(pkg_resources.resource_filename(__name__, ''))
+			utils_path = Path(__file__).parent
 			theme_path = utils_path.parent / "themes" / theme_file
 			with open(theme_path) as stream:
 				try:
