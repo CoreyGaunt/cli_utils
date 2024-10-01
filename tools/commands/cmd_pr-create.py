@@ -1,6 +1,7 @@
 import click
 import subprocess
 import pkg_resources
+import re
 from pathlib import Path
 from tools.utils.tools_utils import ToolsUtils
 
@@ -20,15 +21,27 @@ def cli(is_cross_team):
 	# for prefix in config['branches']['branch-prefixes']:
 	# 	pr_prefix += f"'{prefix}' "
 	# pr_type = utils.gum_filter(pr_prefix, "What Type Of Pull Request Is This?")
+	
+	# Pull the git branch name from git and use it as a placeholder value
+	git_branch = subprocess.run(["git", "branch", "--show-current"], capture_output=True, text=True)
+	git_pr_default = git_branch.stdout.strip()
 	pr_ticket_confirm = utils.gum_confirm("Does this pull request have a corresponding ticket?")
 	ticket_confirmation = pr_ticket_confirm
 	if ticket_confirmation:
-		pr_ticket = utils.gum_input("What Is The Ticket Number?")
-		pr_ticket_reference = f"{config['general']['team-tag']}-{pr_ticket}"
-		pr_header = f"{pr_ticket_reference}: "
+		team_tag = config['general']['team-tag']
+		ticket_match = re.search(rf"{team_tag}-(\d{{1,4}})", git_pr_default)
+		if ticket_match:
+			ticket_reference = ticket_match.group(0)
+			pr_header = ticket_reference + ": "
+			pr_ticket_reference = ticket_match.group(1)
+			cleaned_pr_default = re.sub(rf".*{team_tag}-(\d{{1,4}}-)", "", git_pr_default)
 	else:
+		pr_ticket_reference = ""
 		pr_header = ""
-	pr_title = utils.gum_input("What Do You Want To Name This PR?")
+		cleaned_pr_default = git_pr_default
+	cleaned_pr_default = cleaned_pr_default.replace("-", " ")
+	cleaned_pr_default = cleaned_pr_default.title()
+	pr_title = utils.gum_input("What Do You Want To Name This PR?", cleaned_pr_default)
 	commands_dir = Path(pkg_resources.resource_filename(__name__, ''))
 	template_dir = commands_dir.parent / "pull_request_templates"
 
