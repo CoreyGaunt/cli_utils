@@ -1,7 +1,7 @@
 import sys
 import click
 import importlib
-import pkg_resources
+from importlib import resources
 from pathlib import Path
 from tools.tools_config import init_tools
 from tools.utils.tools_utils import ToolsUtils
@@ -16,7 +16,7 @@ utils = ToolsUtils()
 config = utils.load_config()
 
 excluded_commands = [x for x in config['excluded-commands']]
-tools_dir = Path(pkg_resources.resource_filename(__name__, ''))
+tools_dir = Path(__file__).parent
 commands_dir = tools_dir / "commands"
 commands = [x.stem for x in commands_dir.glob("*.py") if x.stem not in excluded_commands]
 command_names = [x[4:] for x in commands]
