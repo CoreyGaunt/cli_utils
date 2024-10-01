@@ -1,6 +1,5 @@
 import click
 import subprocess
-import pkg_resources
 import re
 from pathlib import Path
 from tools.utils.tools_utils import ToolsUtils
@@ -42,7 +41,7 @@ def cli(is_cross_team):
 	cleaned_pr_default = cleaned_pr_default.replace("-", " ")
 	cleaned_pr_default = cleaned_pr_default.title()
 	pr_title = utils.gum_input("What Do You Want To Name This PR?", cleaned_pr_default)
-	commands_dir = Path(pkg_resources.resource_filename(__name__, ''))
+	commands_dir = Path(__file__).parent
 	template_dir = commands_dir.parent / "pull_request_templates"
 
 	if is_cross_team:

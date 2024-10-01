@@ -3,7 +3,6 @@ import re
 import yaml
 import sys
 import subprocess
-import pkg_resources
 from pathlib import Path
 from rich.console import Console
 from beaupy import confirm, prompt, select, Config
