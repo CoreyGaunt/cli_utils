@@ -8,7 +8,8 @@ utils = ToolsUtils()
 
 @click.command("pr-create")
 @click.option('--is-cross-team', '-c', is_flag=True, help="Create a cross-team pull request.")
-def cli(is_cross_team):
+@click.option('--ticket-only', '-to', is_flag=True, help="Create a pull request with only a ticket reference.")
+def cli(is_cross_team, ticket_only):
 	"""
 	Opens a new draft pull request in the current repository.
 
@@ -46,6 +47,8 @@ def cli(is_cross_team):
 
 	if is_cross_team:
 		template = "cross_team_template.md"
+	elif ticket_only:
+		template = "data_dbt_ticket_only.md"
 	else:
 		template = "data_dbt.md"
 	template_file = template_dir / template
