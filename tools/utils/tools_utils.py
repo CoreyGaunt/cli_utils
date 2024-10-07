@@ -179,7 +179,7 @@ class ToolsUtils:
 		gum_confirm = f"gum confirm '{message}' --prompt.foreground '{primary_color}'\
 		--selected.background '{secondary_color}' --unselected.background '{tertiary_color}'"
 		try:
-			gum_confirm_process = self._enable_cmd_abort(gum_confirm, quaternary_color)
+			gum_confirm_process = self._enable_cmd_abort(gum_confirm, quaternary_color, force_exit=False)
 			gum_confirm_output = True 
 		except subprocess.CalledProcessError:
 			gum_confirm_output = False
@@ -212,7 +212,7 @@ class ToolsUtils:
 
 		return gum_write_output
 
-	def _enable_cmd_abort(self, cmd, color="bold red"):
+	def _enable_cmd_abort(self, cmd, color="bold red", force_exit=True):
 		try:
 			ran_process = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
 			return ran_process
@@ -221,4 +221,5 @@ class ToolsUtils:
 				self.console.print("Aborted!", style=color)
 			else:
 				self.console.print(f"Error: {e}", style=color)
-			sys.exit(1)
+			if force_exit:
+				sys.exit(1)
