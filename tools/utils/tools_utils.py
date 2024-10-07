@@ -140,7 +140,7 @@ class ToolsUtils:
 			--cursor-text.foreground '{secondary_color}' --match.foreground '{tertiary_color}' --height 10 --no-limit\
 			--unselected-prefix.foreground '{tertiary_color}' --selected-indicator.foreground '{tertiary_color}'"
 		gum_filter_process = self._enable_cmd_abort(gum_filter, quaternary_color)
-		gum_filter_output = gum_filter_process.stdout.strip()
+		gum_filter_output = self._return_cmd_output(gum_filter_process)
 
 		return gum_filter_output
 	
@@ -211,7 +211,11 @@ class ToolsUtils:
 		gum_write_output = gum_write_process.stdout.strip()
 
 		return gum_write_output
-
+	def _return_cmd_output(self, process):
+		if not isinstance(process, subprocess.CompletedProcess):
+			pass
+		else:
+			return process.stdout.strip()
 	def _enable_cmd_abort(self, cmd, color="bold red", force_exit=True):
 		try:
 			ran_process = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
@@ -219,8 +223,7 @@ class ToolsUtils:
 		except subprocess.CalledProcessError as e:
 			if e.returncode == 130:
 				self.console.print("Aborted!", style=color)
+			if force_exit:
+				sys.exit(1)
 			else:
-				if force_exit:
-					self.console.print(f"Error: {e}", style=color)
-					sys.exit(1)
-			return e
+				return e.returncode
