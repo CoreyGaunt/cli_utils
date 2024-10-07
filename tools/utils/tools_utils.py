@@ -178,12 +178,12 @@ class ToolsUtils:
 		primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = self.load_theme(config)
 		gum_confirm = f"gum confirm '{message}' --prompt.foreground '{primary_color}'\
 		--selected.background '{secondary_color}' --unselected.background '{tertiary_color}'"
-		try:
-			gum_confirm_process = self._enable_cmd_abort(gum_confirm, quaternary_color, force_exit=False)
-			gum_confirm_output = True 
-		except subprocess.CalledProcessError:
+		gum_confirm_process = self._enable_cmd_abort(gum_confirm, quaternary_color, force_exit=False)
+		
+		if gum_confirm_process != 1:
+			gum_confirm_output = True
+		else:
 			gum_confirm_output = False
-
 		return gum_confirm_output
 	
 	def gum_choose(self, choices):
@@ -220,6 +220,7 @@ class ToolsUtils:
 			if e.returncode == 130:
 				self.console.print("Aborted!", style=color)
 			else:
-				self.console.print(f"Error: {e}", style=color)
-			if force_exit:
-				sys.exit(1)
+				if force_exit:
+					self.console.print(f"Error: {e}", style=color)
+					sys.exit(1)
+			return e
