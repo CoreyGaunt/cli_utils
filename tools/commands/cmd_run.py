@@ -13,14 +13,14 @@ console = Console()
 utils = ToolsUtils()
 
 @click.command("run")
-@click.option('--prod', '-p', is_flag=True, 
+@click.option('--prod', '-p', is_flag=True,
               help="Run the dbt Models in the production environment.")
-@click.option('--upstream', '-u', default='', is_flag=False, 
+@click.option('--upstream', '-u', default='', is_flag=False,
               flag_value='+',
               help=("Run the specified model & its parent models. You can also "
                     "specify the number of levels to go up. E.g. 1+<model_name> "
                     "or 2+<model_name>. Defaults to +<model_name>."))
-@click.option('--downstream', '-d', default='', is_flag=False, 
+@click.option('--downstream', '-d', default='', is_flag=False,
               flag_value='+',
               help=("Run specified model & its children models. You can also "
                     "specify the number of levels to go up. E.g. <model_name>+1 "
@@ -63,7 +63,7 @@ def cli(prod, upstream, downstream, waterfall):
                 if re.match(r'^[1-9]{1}$', upstream):
                     prefix = f'{upstream}+'
                 else:
-                    console.print("Invalid prefix. Please specify a number between 1 and 9", 
+                    console.print("Invalid prefix. Please specify a number between 1 and 9",
                                   style="bold red")
                     exit()
         if downstream:
@@ -74,7 +74,7 @@ def cli(prod, upstream, downstream, waterfall):
                 if re.match(r'^[1-9]{1}$', downstream):
                     suffix = f'+{downstream}'
                 else:
-                    console.print("Invalid prefix. Please specify a number between 1 and 9", 
+                    console.print("Invalid prefix. Please specify a number between 1 and 9",
                                   style="bold red")
                     exit()
     # Anchor to the target directory models/
@@ -101,7 +101,7 @@ def cli(prod, upstream, downstream, waterfall):
         subprocess.run(f"{use_venv} -c '{cmd}'", shell=True, check=True, cwd=Path.cwd(), text=True)
         utils.add_cmd_to_zsh_history(cmd)
     except subprocess.CalledProcessError:
-        console.print("An error occurred while running the dbt models", 
+        console.print("An error occurred while running the dbt models",
                       style="bold red")
         utils.add_cmd_to_zsh_history(cmd)
         exit()
