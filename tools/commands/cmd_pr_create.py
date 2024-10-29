@@ -33,10 +33,9 @@ def cli(is_cross_team, ticket_only):
 		if ticket_match:
 			ticket_reference = ticket_match.group(0)
 			pr_header = ticket_reference + ": "
-			pr_ticket_reference = ticket_match.group(1)
 			cleaned_pr_default = re.sub(rf".*{team_tag}-(\d{{1,4}}-)", "", git_pr_default)
 	else:
-		pr_ticket_reference = ""
+		ticket_reference = ""
 		pr_header = ""
 		cleaned_pr_default = git_pr_default
 	cleaned_pr_default = cleaned_pr_default.replace("-", " ")
@@ -55,7 +54,7 @@ def cli(is_cross_team, ticket_only):
 	pr_body_from_env = template_file.read_text()
 	# Parse template file and look for 'replace_ticket_ref' and replace with pr_ticket_reference
 	if pr_body_from_env.find("replace_ticket_ref") != -1:
-		pr_body_from_env = pr_body_from_env.replace("replace_ticket_ref", pr_ticket_reference)
+		pr_body_from_env = pr_body_from_env.replace("replace_ticket_ref", ticket_reference)
 	pr_body = utils.gum_write("What Did You Do?", pr_body_from_env)
 	# handle special characters in pr_body that would cause in error
 	try:
