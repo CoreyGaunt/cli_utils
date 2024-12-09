@@ -238,7 +238,8 @@ class ToolsUtils:
                 --cursor.foreground '{cursor_color}'\
                 --prompt '{cursor_style}'\
                 --prompt.foreground '{prompt_color}'\
-                --value '{sanitize_placeholder}'"
+                --value '{sanitize_placeholder}'\
+                --char-limit 0"
         gum_input_process = self._enable_cmd_abort(gum_input, quaternary_color)
         gum_input_output = gum_input_process.stdout.strip()
 

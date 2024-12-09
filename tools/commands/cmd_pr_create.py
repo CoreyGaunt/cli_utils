@@ -33,12 +33,14 @@ def cli(is_cross_team, ticket_only):
 		if ticket_match:
 			ticket_reference = ticket_match.group(0)
 			pr_header = ticket_reference + ": "
-			cleaned_pr_default = re.sub(rf".*{team_tag}-(\d{{1,4}}-)", "", git_pr_default)
+			base_cleaned_pr_default = re.sub(rf".*{team_tag}-(\d{{1,4}}-)", "", git_pr_default)
+		else:
+			base_cleaned_pr_default = git_pr_default
 	else:
 		ticket_reference = ""
 		pr_header = ""
-		cleaned_pr_default = git_pr_default
-	cleaned_pr_default = cleaned_pr_default.replace("-", " ")
+		base_cleaned_pr_default = git_pr_default
+	cleaned_pr_default = base_cleaned_pr_default.replace("-", " ")
 	cleaned_pr_default = cleaned_pr_default.title()
 	pr_title = utils.gum_input("What Do You Want To Name This PR?", cleaned_pr_default)
 	commands_dir = Path(__file__).parent
