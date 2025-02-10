@@ -212,7 +212,7 @@ class ToolsUtils:
                 --selected-indicator.foreground '{tertiary_color}'"
         gum_filter_process = self._enable_cmd_abort(gum_filter, quaternary_color)
         gum_filter_output = self._return_cmd_output(gum_filter_process)
-        gum_filter_output = gum_filter_output.replace('\n', ' ')
+        # gum_filter_output = gum_filter_output.replace('\n', ' ')
 
         return gum_filter_output
 
