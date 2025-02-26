@@ -27,15 +27,15 @@ def cli():
 	config = utils.load_config()
 	primary_color, secondary_color, _, _, prompt_color, cursor_style, cursor_color, _ = utils.load_theme(config)
 	console.print("Creating a New Branch", style=primary_color, highlight=True)
-	branch_prefixes = []
-	for prefix in config['branches']['branch-prefixes']:
-		branch_prefixes.append(f"[{secondary_color}]{prefix}[/{secondary_color}]")
-	branch_type = select(
-		options=branch_prefixes,
-		cursor=cursor_style,
-		cursor_style=cursor_color
-		)
-	branch_type = utils.remove_color_indicators(branch_type)
+	# branch_prefixes = []
+	# for prefix in config['branches']['branch-prefixes']:
+	# 	branch_prefixes.append(f"[{secondary_color}]{prefix}[/{secondary_color}]")
+	# branch_type = select(
+	# 	options=branch_prefixes,
+	# 	cursor=cursor_style,
+	# 	cursor_style=cursor_color
+	# 	)
+	# branch_type = utils.remove_color_indicators(branch_type)
 	has_corresponding_ticket = confirm(
 		question=f"[{prompt_color}]Does this branch have a corresponding ticket?[/{prompt_color}]",
 		cursor=cursor_style,
@@ -54,9 +54,9 @@ def cli():
 	default_branch = default_branch.replace("origin/", "")
 	cmd1 = f"git checkout {default_branch} && git pull"
 	if has_corresponding_ticket:
-		cmd2 = f"git checkout -b {branch_type}/{branch_ticket_ref}-{branch_name} && git push --set-upstream origin {branch_type}/{branch_ticket_ref}-{branch_name}"
+		cmd2 = f"git checkout -b {branch_ticket_ref}-{branch_name} && git push --set-upstream origin {branch_ticket_ref}-{branch_name}"
 	else:
-		cmd2 = f"git checkout -b {branch_type}/{branch_name} && git push --set-upstream origin {branch_type}/{branch_name}"
+		cmd2 = f"git checkout -b {branch_name} && git push --set-upstream origin {branch_name}"
 	spinner = Spinner(LOADING, f"	  Pulling Down From {capwords(default_branch)}")
 	spinner.start()
 	subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
