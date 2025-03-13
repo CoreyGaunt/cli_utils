@@ -18,7 +18,7 @@ https://fig.io/docs/getting-started/first-completion-spec
 
 setup(
 	name='tools',
-	version='0.2.7',
+	version='0.2.8',
 	packages=find_namespace_packages(include=["tools", "tools*"]),
 	package_data={"": ["*.yaml", "*.txt", "*.md"]},
 	author="Corey Gaunt",

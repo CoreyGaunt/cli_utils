@@ -8,8 +8,8 @@ utils = ToolsUtils()
 
 @click.command("pr-create")
 @click.option('--tableau', '-tab', is_flag=True, help="Create a Tableau pull request.")
-@click.option('--ticket-only', '-to', is_flag=True, help="Create a pull request with only a ticket reference.")
-def cli(tableau, ticket_only):
+@click.option('--verbose', '-v', is_flag=True, help="Create a pull request with only a ticket reference.")
+def cli(tableau, verbose):
 	"""
 	Opens a new draft pull request in the current repository.
 
@@ -48,10 +48,10 @@ def cli(tableau, ticket_only):
 
 	if tableau:
 		template = "data_tableau.md"
-	elif ticket_only:
-		template = "data_dbt_ticket_only.md"
+	elif verbose:
+		template = "data_dbt_verbose.md"
 	else:
-		template = "data_dbt.md"
+		template = "data_dbt_ticket_only.md"
 	template_file = template_dir / template
 	pr_body_from_env = template_file.read_text()
 	# Parse template file and look for 'replace_ticket_ref' and replace with pr_ticket_reference

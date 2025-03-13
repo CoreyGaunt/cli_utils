@@ -1,5 +1,5 @@
 ## Jira Ticket
-\[Jira Ticket\]\(https://ledgebrook.atlassian.net/browse/replace_ticket_ref)
+\[replace_ticket_ref\]\(https://ledgebrook.atlassian.net/browse/replace_ticket_ref)
 
 ## What Changes?
 
