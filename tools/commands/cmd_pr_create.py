@@ -7,7 +7,7 @@ from tools.utils.tools_utils import ToolsUtils
 utils = ToolsUtils()
 
 @click.command("pr-create")
-@click.option('--tableau', '-t', is_flag=True, help="Create a Tableau pull request.")
+@click.option('--tableau', '-tab', is_flag=True, help="Create a Tableau pull request.")
 @click.option('--ticket-only', '-to', is_flag=True, help="Create a pull request with only a ticket reference.")
 def cli(tableau, ticket_only):
 	"""
