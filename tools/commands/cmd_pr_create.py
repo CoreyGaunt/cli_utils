@@ -7,9 +7,9 @@ from tools.utils.tools_utils import ToolsUtils
 utils = ToolsUtils()
 
 @click.command("pr-create")
-@click.option('--is-cross-team', '-c', is_flag=True, help="Create a cross-team pull request.")
+@click.option('--tableau', '-t', is_flag=True, help="Create a Tableau pull request.")
 @click.option('--ticket-only', '-to', is_flag=True, help="Create a pull request with only a ticket reference.")
-def cli(is_cross_team, ticket_only):
+def cli(tableau, ticket_only):
 	"""
 	Opens a new draft pull request in the current repository.
 
@@ -46,8 +46,8 @@ def cli(is_cross_team, ticket_only):
 	commands_dir = Path(__file__).parent
 	template_dir = commands_dir.parent / "pull_request_templates"
 
-	if is_cross_team:
-		template = "cross_team_template.md"
+	if tableau:
+		template = "data_tableau.md"
 	elif ticket_only:
 		template = "data_dbt_ticket_only.md"
 	else:
