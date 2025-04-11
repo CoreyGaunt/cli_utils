@@ -1,6 +1,7 @@
 import click
 import subprocess
 import re
+import shlex
 from pathlib import Path
 from tools.utils.tools_utils import ToolsUtils
 
@@ -8,8 +9,8 @@ utils = ToolsUtils()
 
 @click.command("pr-create")
 @click.option('--tableau', '-tab', is_flag=True, help="Create a Tableau pull request.")
-@click.option('--verbose', '-v', is_flag=True, help="Create a pull request with only a ticket reference.")
-def cli(tableau, verbose):
+@click.option('--ticket-only', '-to', is_flag=True, help="Create a pull request with only a ticket reference.")
+def cli(tableau, ticket_only):
 	"""
 	Opens a new draft pull request in the current repository.
 
@@ -48,24 +49,25 @@ def cli(tableau, verbose):
 
 	if tableau:
 		template = "data_tableau.md"
-	elif verbose:
-		template = "data_dbt_verbose.md"
-	else:
+	elif ticket_only:
 		template = "data_dbt_ticket_only.md"
+	else:
+		template = "data_dbt_verbose.md"
 	template_file = template_dir / template
 	pr_body_from_env = template_file.read_text()
 	# Parse template file and look for 'replace_ticket_ref' and replace with pr_ticket_reference
 	if pr_body_from_env.find("replace_ticket_ref") != -1:
 		pr_body_from_env = pr_body_from_env.replace("replace_ticket_ref", ticket_reference)
 	pr_body = utils.gum_write("What Did You Do?", pr_body_from_env)
+	escaped_body = shlex.quote(pr_body)
 	# handle special characters in pr_body that would cause in error
 	try:
-		cmd1 = f"gh pr create --title '{pr_header}{pr_title}' --body $'{pr_body}' --draft"
+		cmd1 = f"gh pr create --title '{pr_header}{pr_title}' --body $'{escaped_body}' --draft"
 		subprocess.run(cmd1, shell=True, cwd=Path.cwd(), check=True)
 	except Exception as e:
 		print("Attempting to create pull request without --draft flag")
 		try:
-			cmd2 = f"gh pr create --title '{pr_header}{pr_title}' --body $'{pr_body}'"
+			cmd2 = f"gh pr create --title '{pr_header}{pr_title}' --body $'{escaped_body}'"
 			subprocess.run(cmd2, shell=True, cwd=Path.cwd())
 		except Exception as e:
 			exit()
