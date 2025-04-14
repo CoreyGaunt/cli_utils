@@ -62,12 +62,12 @@ def cli(tableau, ticket_only):
 	escaped_body = shlex.quote(pr_body)
 	# handle special characters in pr_body that would cause in error
 	try:
-		cmd1 = f"gh pr create --title '{pr_header}{pr_title}' --body $'{escaped_body}' --draft"
+		cmd1 = f"gh pr create --title '{pr_header}{pr_title}' --body {escaped_body} --draft"
 		subprocess.run(cmd1, shell=True, cwd=Path.cwd(), check=True)
 	except Exception as e:
 		print("Attempting to create pull request without --draft flag")
 		try:
-			cmd2 = f"gh pr create --title '{pr_header}{pr_title}' --body $'{escaped_body}'"
+			cmd2 = f"gh pr create --title '{pr_header}{pr_title}' --body {escaped_body}"
 			subprocess.run(cmd2, shell=True, cwd=Path.cwd())
 		except Exception as e:
 			exit()
