@@ -1,0 +1,29 @@
+name: "emberglow"
+version: 0.1.0
+color_pallette:
+  user_color: "bold rgb(255,87,34)"
+  hex_user_color: "#ff5722"
+  path_color: "bold rgb(255,111,97)"
+  hex_path_color: "#ff6f61"
+  branch_color: "bold rgb(255,193,7)"
+  hex_branch_color: "#ffc107"
+  git_ref_color: "bold rgb(255,235,59)"
+  hex_git_ref_color: "#ffeb3b"
+  status_color: "bold rgb(76,175,80)"
+  hex_status_color: "#4caf50"
+  prompt_color: "bold rgb(233,30,99)"
+  hex_prompt_color: "#e91e63"
+formatting_aliases:
+  reset: "\e[0m"
+  bold: "\e[1m"
+  faint: "\e[2m"
+  italic: "\e[3m"
+  underline: "\e[4m"
+  invert: "\e[7m"
+icons:
+  user_icon: "󰔁 "
+  path_icon: " "
+  branch_icon: "  "
+  prompt_icon: "󰘍 "
+  gum_filter_icon: "󱍿 "
+

@@ -1,0 +1,29 @@
+name: "solstice"
+version: 0.1.0
+color_pallette:
+  user_color: "bold rgb(255,105,97)"
+  hex_user_color: "#ff6961"
+  path_color: "bold rgb(255,179,71)"
+  hex_path_color: "#ffb347"
+  branch_color: "bold rgb(255,255,153)"
+  hex_branch_color: "#ffff99"
+  git_ref_color: "bold rgb(102,204,255)"
+  hex_git_ref_color: "#66ccff"
+  status_color: "bold rgb(64,224,208)"
+  hex_status_color: "#40e0d0"
+  prompt_color: "bold rgb(255,160,122)"
+  hex_prompt_color: "#ffa07a"
+formatting_aliases:
+  reset: "\e[0m"
+  bold: "\e[1m"
+  faint: "\e[2m"
+  italic: "\e[3m"
+  underline: "\e[4m"
+  invert: "\e[7m"
+icons:
+  user_icon: "󰔁 "
+  path_icon: " "
+  branch_icon: "  "
+  prompt_icon: "󰘍 "
+  gum_filter_icon: "󱍿 "
+

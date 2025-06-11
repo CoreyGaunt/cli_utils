@@ -1,0 +1,29 @@
+name: "neon_void"
+version: 0.1.0
+color_pallette:
+  user_color: "bold rgb(255,20,147)"
+  hex_user_color: "#ff1493"
+  path_color: "bold rgb(0,255,255)"
+  hex_path_color: "#00ffff"
+  branch_color: "bold rgb(255,255,0)"
+  hex_branch_color: "#ffff00"
+  git_ref_color: "bold rgb(186,85,211)"
+  hex_git_ref_color: "#ba55d3"
+  status_color: "bold rgb(0,255,127)"
+  hex_status_color: "#00ff7f"
+  prompt_color: "bold rgb(138,43,226)"
+  hex_prompt_color: "#8a2be2"
+formatting_aliases:
+  reset: "\e[0m"
+  bold: "\e[1m"
+  faint: "\e[2m"
+  italic: "\e[3m"
+  underline: "\e[4m"
+  invert: "\e[7m"
+icons:
+  user_icon: "󰔁 "
+  path_icon: " "
+  branch_icon: "  "
+  prompt_icon: "󰘍 "
+  gum_filter_icon: "󱍿 "
+
