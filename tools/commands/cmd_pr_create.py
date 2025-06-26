@@ -93,7 +93,7 @@ def _generate_pr_title_default(git_pr_default):
     return pr_heading + pr_title
         
 def _load_prepositions():
-    prepositions_file = Path(__file__).parent.parent / "tools" / "seeds" / "prepositions.json"
+    prepositions_file = Path(__file__).parent.parent / "seeds" / "prepositions.json"
     with open(prepositions_file, "r", encoding="utf-8") as f:
         prepositions = json.load(f)
     return prepositions
