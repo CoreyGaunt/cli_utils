@@ -88,7 +88,7 @@ def _generate_pr_title_default(git_pr_default):
     pr_title_body = pr_title_body.replace("-", " ")
 
     pr_title_list = pr_title_body.split(" ")
-    words = [word.title() for word in pr_title_list if word not in prepositions]
+    words = [word.title() if word not in prepositions else word for word in pr_title_list]
     pr_title = " ".join(words)
     return pr_heading + pr_title
         
