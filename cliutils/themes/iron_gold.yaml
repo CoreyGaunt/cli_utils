@@ -1,0 +1,28 @@
+name: "iron_gold"
+version: 0.1.0
+color_pallette:
+  user_color: "bold rgb(177,116,15)"
+  hex_user_color: "#b1740f"
+  path_color: "bold rgb(253,184,51)"
+  hex_path_color: "#fdb833"
+  branch_color: "bold rgb(23,137,252)"
+  hex_branch_color: "#1789fc"
+  git_ref_color: "bold rgb(255,208,123)"
+  hex_git_ref_color: "#ffd07b"
+  status_color: "bold rgb(41,110,180)"
+  hex_status_color: "#296eb4"
+  prompt_color: "bold rgb(23,0,255)"
+  hex_prompt_color: "#1700ff"
+formatting_aliases:
+  reset: "\e[0m"
+  bold: "\e[1m"
+  faint: "\e[2m"
+  italic: "\e[3m"
+  underline: "\e[4m"
+  invert: "\e[7m"
+icons:
+  user_icon: "󰔁 "
+  path_icon: " "
+  branch_icon: "  "
+  prompt_icon: "󰘍 "
+  gum_filter_icon: "󱍿 "

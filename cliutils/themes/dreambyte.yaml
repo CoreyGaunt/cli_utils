@@ -1,0 +1,29 @@
+name: "dreambyte"
+version: 0.1.0
+color_pallette:
+  user_color: "bold rgb(255,192,203)"
+  hex_user_color: "#ffc0cb"
+  path_color: "bold rgb(173,216,230)"
+  hex_path_color: "#add8e6"
+  branch_color: "bold rgb(221,160,221)"
+  hex_branch_color: "#dda0dd"
+  git_ref_color: "bold rgb(144,238,144)"
+  hex_git_ref_color: "#90ee90"
+  status_color: "bold rgb(255,182,193)"
+  hex_status_color: "#ffb6c1"
+  prompt_color: "bold rgb(255,105,180)"
+  hex_prompt_color: "#ff69b4"
+formatting_aliases:
+  reset: "\e[0m"
+  bold: "\e[1m"
+  faint: "\e[2m"
+  italic: "\e[3m"
+  underline: "\e[4m"
+  invert: "\e[7m"
+icons:
+  user_icon: "󰔁 "
+  path_icon: " "
+  branch_icon: "  "
+  prompt_icon: "󰘍 "
+  gum_filter_icon: "󱍿 "
+

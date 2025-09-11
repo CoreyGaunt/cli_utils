@@ -1,0 +1,29 @@
+name: "terminal_flux"
+version: 0.1.0
+color_pallette:
+  user_color: "bold rgb(0,200,255)"
+  hex_user_color: "#00c8ff"
+  path_color: "bold rgb(80,220,200)"
+  hex_path_color: "#50dcc8"
+  branch_color: "bold rgb(255,140,0)"
+  hex_branch_color: "#ff8c00"
+  git_ref_color: "bold rgb(255,64,129)"
+  hex_git_ref_color: "#ff4081"
+  status_color: "bold rgb(0,255,180)"
+  hex_status_color: "#00ffb4"
+  prompt_color: "bold rgb(204,0,255)"
+  hex_prompt_color: "#cc00ff"
+formatting_aliases:
+  reset: "\e[0m"
+  bold: "\e[1m"
+  faint: "\e[2m"
+  italic: "\e[3m"
+  underline: "\e[4m"
+  invert: "\e[7m"
+icons:
+  user_icon: "󰔁 "
+  path_icon: " "
+  branch_icon: "  "
+  prompt_icon: "󰘍 "
+  gum_filter_icon: "󱍿 "
+

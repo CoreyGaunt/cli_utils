@@ -17,15 +17,15 @@ https://fig.io/docs/getting-started/first-completion-spec
 """
 
 setup(
-	name='tools',
-	version='0.3.0',
-	packages=find_namespace_packages(include=["tools", "tools*"]),
+	name='cliutils',
+	version='0.1.0',
+	packages=find_namespace_packages(include=["cliutils", "cliutils*"]),
 	package_data={"": ["*.yaml", "*.txt", "*.md"]},
 	author="Corey Gaunt",
 	url="https://github.com/CoreyGaunt/cli_utils",
 	entry_points='''
 		[console_scripts]
-		tools=tools.cli:cli
+		cliutils=cliutils.cli:cli
 	''',
 	install_requires=Path("requirements.txt").read_text().splitlines(),
 )
