@@ -10,7 +10,6 @@ from tools.utils.tools_utils import ToolsUtils
 utils = ToolsUtils()
 
 @click.command("pr-create")
-@click.option('--tableau', '-tab', is_flag=True, help="Create a Tableau pull request.")
 @click.option('--ticket-only', '-to', is_flag=True, help="Create a pull request with only a ticket reference.")
 def cli(tableau, ticket_only):
     """
@@ -48,9 +47,7 @@ def cli(tableau, ticket_only):
     commands_dir = Path(__file__).parent
     template_dir = commands_dir.parent / "pull_request_templates"
 
-    if tableau:
-        template = "data_tableau.md"
-    elif ticket_only:
+    if ticket_only:
         template = "data_dbt_ticket_only.md"
     else:
         template = "data_dbt_verbose.md"
