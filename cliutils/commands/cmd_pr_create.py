@@ -11,7 +11,7 @@ utils = CLIUtils()
 
 @click.command("pr-create")
 @click.option('--ticket-only', '-to', is_flag=True, help="Create a pull request with only a ticket reference.")
-def cli(tableau, ticket_only):
+def cli(ticket_only):
     """
     Opens a new draft pull request in the current repository.
 
