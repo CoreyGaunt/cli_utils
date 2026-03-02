@@ -1,5 +1,5 @@
 from pathlib import Path
-import click # type: ignore
+import click
 from cliutils.cliutils_config import init_cliutils
 from cliutils.commands import COMMANDS
 
