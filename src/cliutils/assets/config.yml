@@ -1,0 +1,21 @@
+general:
+  team-tag: "DATA"
+  team-name: "Data"
+commits:
+  conventional-commits:
+    types:
+      - Feat
+      - Refactor
+      - Fix
+      - Docs
+      - Style
+      - Test
+      - Chore
+branches:
+  branch-prefixes:
+    - feature
+    - hotfix
+    - chore
+    - docs
+theme:
+  name: $TERMINAL_THEME

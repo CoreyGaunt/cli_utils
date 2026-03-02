@@ -4,10 +4,13 @@ import re
 import shlex
 import subprocess
 from pathlib import Path
-import click # type: ignore
-from cliutils.tools.cliutils_tools import CLIUtils
+import click
+from cliutils.tools import (
+    GumPrompts,
+    ConfigManager,
+)
 
-utils = CLIUtils()
+ASSETS_PATH = Path(__file__).parent.parent / "assets"
 
 @click.command("pr-create")
 @click.option('--ticket-only', '-to', is_flag=True, help="Create a pull request with only a ticket reference.")
@@ -25,17 +28,19 @@ def pr_create(ticket_only):
     the pull request title will be generated from the branch name.
     """
 
-    config = utils.load_config()
+    prompts = GumPrompts()
+    config_manager = ConfigManager()
 
     # Pull the git branch name from git and use it as a placeholder value
-    git_branch = subprocess.run(
-        ["git", "branch", "--show-current"],
-        capture_output=True,
-        text=True,
-        check=True
-    )
-    git_pr_default = git_branch.stdout.strip()
-    team_tag = config['general']['team-tag']
+    git_pr_default = _pull_branch_name()
+
+    if git_pr_default == "main":
+        print("You are on the main branch. Please create a new branch and try again.")
+        sys.exit()
+
+    team_tag = config_manager.config['general']['team-tag']
+
+    # TODO: think about breaking out lines 37 - 45 into a function
     ticket_match = re.search(rf"{team_tag}-(\d{{1,4}})", git_pr_default)
     if ticket_match:
         ticket_reference = ticket_match.group(0)
@@ -45,23 +50,29 @@ def pr_create(ticket_only):
         base_cleaned_pr_default = git_pr_default
         ticket_reference = ""
         pr_header = ""
+
     cleaned_pr_default = _generate_pr_title_default(base_cleaned_pr_default)
-    pr_title = utils.gum_input("What Do You Want To Name This PR?", cleaned_pr_default)
-    commands_dir = Path(__file__).parent
-    template_dir = commands_dir.parent / "pull_request_templates"
+    pr_title = prompts.gum_input("What Do You Want To Name This PR?", cleaned_pr_default)
+
+    # TODO: think about moving lines 51 - 59 into config manager
+    templates_path = ASSETS_PATH / "templates"
+    pull_request_templates_path = templates_path / "pull_requests"
 
     if ticket_only:
         template = "data_dbt_ticket_only.md"
     else:
         template = "data_dbt_verbose.md"
-    template_file = template_dir / template
+    template_file = pull_request_templates_path / template
     pr_body_from_env = template_file.read_text()
+
     # Parse template file and look for 'replace_ticket_ref' and replace with pr_ticket_reference
     if pr_body_from_env.find("replace_ticket_ref") != -1:
         pr_body_from_env = pr_body_from_env.replace("replace_ticket_ref", ticket_reference)
-    pr_body = utils.gum_write("What Did You Do?", pr_body_from_env)
-    escaped_body = shlex.quote(pr_body)
+    pr_body = prompts.gum_write("What Did You Do?", pr_body_from_env)
+    escaped_body = shlex.quote(pr_body) # TODO: look into shlex and see if it's necessary
     # handle special characters in pr_body that would cause in error
+
+    # TODO: think about breaking the remainder of this code into a try loop function
     try:
         cmd1 = f"gh pr create --title '{pr_header}{pr_title}' --body {escaped_body} --draft"
         subprocess.run(cmd1, shell=True, cwd=Path.cwd(), check=True)
@@ -77,6 +88,7 @@ def pr_create(ticket_only):
             print(f"Failed to create pull request because of: {err}")
             sys.exit()
 
+# TODO: can the following function be more granular? i.e. broken out into smaller functions?
 def _generate_pr_title_default(git_pr_default):
     protected_keywords = ["data-", "infra-", "spike-"]
     prepositions = _load_prepositions()
@@ -95,8 +107,17 @@ def _generate_pr_title_default(git_pr_default):
     pr_title = " ".join(words)
     return pr_heading + pr_title
 
+# TODO: think about moving this to the config manager
 def _load_prepositions():
-    prepositions_file = Path(__file__).parent.parent / "seeds" / "prepositions.json"
+    prepositions_file = ASSETS_PATH / "data" / "prepositions.json"
     with open(prepositions_file, "r", encoding="utf-8") as f:
         prepositions = json.load(f)
     return prepositions
+
+def _pull_branch_name():
+    return subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+        check=True
+    ).stdout.strip()

@@ -1,11 +1,13 @@
 import subprocess
 from pathlib import Path
 import click # type: ignore
-from cliutils.tools.cliutils_tools import CLIUtils
-from cliutils.tools.gum_prompts import GumPrompts
+from cliutils.tools import (
+    GumPrompts,
+    ConfigManager,
+)
 
-utils = CLIUtils()
 prompts = GumPrompts()
+config_manager = ConfigManager()
 
 @click.command("commit")
 def commit():
@@ -14,8 +16,8 @@ def commit():
 
     This commands asks for a commit message following the Conventional Commits standards.
 
-    The options for the commit type are stored in the user's home
-    .cliutils/cliutils-config.yaml file.
+    The options for the commit type are stored in the config file located
+    in assets/config.yml.
 
     The interactive prompt will ask you if you'd like to commit all of your changes. If
     you choose to commit all changes, it will add all files, ask for your commit message,
@@ -32,7 +34,7 @@ def commit():
     confirmation = gum_confirm_output
 
     if confirmation:
-        commit_type, commit_message = utils.commit_type_and_message()
+        commit_type, commit_message = _generate_type_and_message()
         cmd1 = "git add ."
         cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
         cmd3 = "git push"
@@ -62,7 +64,7 @@ def commit():
         for file in tracked_files:
             tracked_files_for_commit += f"{file} "
         cmd1 = f"git add {tracked_files_for_commit}"
-        commit_type, commit_message = utils.commit_type_and_message()
+        commit_type, commit_message = _generate_type_and_message()
         cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
         cmd3 = "git push"
 
@@ -70,3 +72,15 @@ def commit():
         subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
         subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
 
+def _generate_type_and_message():
+    """Prompt the user to select a commit type and message."""
+    commit_scopes = ""
+    for scope in config_manager.config["commits"]["conventional-commits"]["types"]:
+        if scope == config_manager.config["commits"]["conventional-commits"]["types"][-1]:
+            commit_scopes += f"'{scope}'"
+        else:
+            commit_scopes += f"'{scope}' "
+    commit_type = prompts.gum_filter(commit_scopes, "What Type Of Commit Is This?")
+    commit_message = prompts.gum_input("What Did You Do?")
+
+    return commit_type, commit_message

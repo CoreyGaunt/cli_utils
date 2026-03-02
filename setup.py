@@ -24,9 +24,10 @@ setup(
 	package_data={"": ["*.yaml", "*.txt", "*.md"]},
 	author="Corey Gaunt",
 	url="https://github.com/CoreyGaunt/cli_utils",
-	entry_points='''
-		[console_scripts]
-		cliutils=cliutils.cli:cli
-	''',
+	entry_points={
+        'console_scripts': [
+            'cliutils=cliutils.__main__:main',
+        ],
+    },
 	install_requires=Path("requirements.txt").read_text().splitlines(),
 )

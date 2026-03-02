@@ -5,10 +5,10 @@ from string import capwords
 from beaupy.spinners import *
 from rich.console import Console
 from beaupy import confirm, prompt, select
-from cliutils.tools.cliutils_tools import CLIUtils
+from cliutils.tools import TerminalInstaller
 
 console = Console()
-utils = CLIUtils()
+utils = TerminalInstaller()
 
 # TODO: Refactor using Gum commands
 @click.command("branch-new")

@@ -1,10 +1,10 @@
 from pathlib import Path
 from rich.console import Console # type: ignore
-from cliutils.tools.cliutils_tools import CLIUtils
+from cliutils.tools import TerminalInstaller
 
 console = Console()
 
-utils = CLIUtils()
+utils = TerminalInstaller()
 
 def init_cliutils():
     """

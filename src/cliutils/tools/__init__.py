@@ -1,11 +1,11 @@
-from .cliutils_tools import CLIUtils
+from .config_manager import ConfigManager
 from .gum_prompts import GumPrompts
 from .subprocess_utilities import SubprocessUtilities
-from .config_manager import ConfigManager
+from .terminal_installer import TerminalInstaller
 
 __all__ = [
-    "CLIUtils",
+    "ConfigManager",
     "GumPrompts",
     "SubprocessUtilities",
-    "ConfigManager",
+    "TerminalInstaller",
 ]

@@ -2,10 +2,10 @@ import click
 import subprocess
 from pathlib import Path
 from rich.console import Console
-from cliutils.tools.cliutils_tools import CLIUtils
+from cliutils.tools import TerminalInstaller
 
 console = Console()
-utils = CLIUtils()
+utils = TerminalInstaller()
 
 @click.command("theme-select")
 def theme_select():
