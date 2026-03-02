@@ -36,5 +36,3 @@ class SubprocessUtilities:
                 return e.returncode, None
             else:
                 sys.exit(1)
-
-                sdf
