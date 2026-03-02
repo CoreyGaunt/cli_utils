@@ -1,6 +1,5 @@
-import click 
 from pathlib import Path
-from rich.console import Console
+from rich.console import Console # type: ignore
 from cliutils.tools.cliutils_tools import CLIUtils
 
 console = Console()
@@ -17,7 +16,7 @@ def init_cliutils():
     config_location.mkdir(exist_ok=True)
     team_tag = utils.init_input("What is your team's Linear Tag?", "DSA")
     team_name = utils.init_input("What is your team's name?", "Data Science & Analytics")
-    with open(f"{config_location}/cliutils-config.yaml", "w") as file:
+    with open(f"{config_location}/cliutils-config.yaml", "w", encoding="utf-8") as file:
         file.write("general:\n")
         file.write(f'  team-tag: "{team_tag}"\n')
         file.write(f'  team-name: "{team_name}"\n')

@@ -19,7 +19,8 @@ https://fig.io/docs/getting-started/first-completion-spec
 setup(
 	name='cliutils',
 	version='0.1.0',
-	packages=find_namespace_packages(include=["cliutils", "cliutils*"]),
+	package_dir={'': 'src'},
+    packages=find_packages(where='src'),
 	package_data={"": ["*.yaml", "*.txt", "*.md"]},
 	author="Corey Gaunt",
 	url="https://github.com/CoreyGaunt/cli_utils",

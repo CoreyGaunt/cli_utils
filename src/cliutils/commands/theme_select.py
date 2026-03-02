@@ -8,7 +8,7 @@ console = Console()
 utils = CLIUtils()
 
 @click.command("theme-select")
-def cli():
+def theme_select():
     """
     Select a color theme for your CLIUtils package in the terminal.
 
@@ -16,9 +16,17 @@ def cli():
     """
     config = utils.load_config()
     themes_list = ""
-    primary_color, secondary_color, tertiary_color, quaternary_color, prompt_color, cursor_style, cursor_color, filter_prompt = utils.load_theme(config)
+    (
+        primary_color,
+        secondary_color,
+        tertiary_color,
+        quaternary_color,
+        prompt_color,
+        cursor_style,
+        cursor_color,
+        filter_prompt
+    ) = utils.load_theme(config)
     themes_dir = Path(__file__).parent.parent / "themes"
-    breakpoint()
     themes = utils.find_all_files_in_directory('python', themes_dir, 'yaml')
     for theme in themes:
         themes_list += f"'{theme}' "

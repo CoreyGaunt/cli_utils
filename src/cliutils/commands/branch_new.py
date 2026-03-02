@@ -12,7 +12,7 @@ utils = CLIUtils()
 
 # TODO: Refactor using Gum commands
 @click.command("branch-new")
-def cli():
+def branch_new():
 	"""
 	Create new branch from latest default.
 	

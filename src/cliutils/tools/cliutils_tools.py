@@ -1,11 +1,10 @@
-import os
 import re
 import sys
 import subprocess
 from pathlib import Path
-import yaml
-from rich.console import Console
-from beaupy import Config
+import yaml # type: ignore
+from rich.console import Console # type: ignore
+from beaupy import Config # type: ignore
 
 class CLIUtils:
     """This class provides utility functions for the cliutils 
@@ -25,9 +24,16 @@ class CLIUtils:
             text=True
         )
         if homebrew_check.returncode != 0:
-            self.console.print("Homebrew Not Found, Installing Homebrew", style="bold red")
+            self.console.print(
+                "Homebrew Not Found, Installing Homebrew",
+                style="bold red"
+            )
+            homebrew_install_url = (
+                "https://raw.githubusercontent.com/Homebrew/install/"
+                "HEAD/install.sh"
+            )
             subprocess.run(
-                "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"", 
+                f"/bin/bash -c \"$(curl -fsSL {homebrew_install_url})\"",
                 shell=True,
                 check=True,
                 stdout=subprocess.PIPE,
@@ -56,35 +62,6 @@ class CLIUtils:
             self.console.print("Gum Installed", style="bold green")
         else:
             self.console.print("Gum Found", style="bold green")
-
-    def add_cmd_to_zsh_history(self, cmd):
-        """Add a command to the zsh history file."""
-        with open(Path.home() / ".zsh_history", "a", encoding="utf-8") as history_file:
-            history_file.write(f"{cmd}\n")
-        os.system("exec zsh -l")
-
-    def find_all_files_in_directory(self, language, directory, file_type):
-        """Find all files in a directory with a given file type
-        and return a list of the file names."""
-        if language == "python":
-            model_list = []
-        elif language == "zsh":
-            model_list = ""
-        models = subprocess.run(
-            f"find {directory} -type f -name '*.{file_type}' -exec basename {{}} .{file_type} \\;",
-            shell=True,
-            check=True,
-            stdout=subprocess.PIPE,
-            text=True
-        )
-        models = models.stdout.strip().split("\n")
-        for model in models:
-            if language == "python":
-                model_list.append(model)
-            elif language == "zsh":
-                model_list += f"'{model}' "
-
-        return model_list
 
     def load_config(self):
         """Load the cliutils-config.yaml file and set the Config.raise_on_escape and
