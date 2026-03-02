@@ -1,5 +1,5 @@
 from pathlib import Path
-from setuptools import setup, find_packages, find_namespace_packages
+from setuptools import setup, find_packages
 
 """ 
 look into curses for the terminal UI

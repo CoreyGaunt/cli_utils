@@ -20,6 +20,10 @@ search and filter to generate the branch name.
 
 Look at [this code here](https://github.com/Ledgebrook-insurtech/shared-python-packages/tree/main/packages/ledgebrook-data-utils) as an example.
 
+CG Note:
+
+    I _think_ this is mostly there. I will want to revisit it later this week (WO 2026-03-02).
+
 ### Restructure to use classes and finer-grained functions
 
 Use a GUM class for gum-related logic and an optional Click/CLI

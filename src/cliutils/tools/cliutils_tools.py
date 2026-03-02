@@ -70,8 +70,8 @@ class CLIUtils:
             with open(f"{self.config_path}", encoding="utf-8") as stream:
                 try:
                     config = yaml.safe_load(stream)
-                    Config.raise_on_escape = config["general"]["raise-on-escape"]
-                    Config.raise_on_interrupt = config["general"]["raise-on-interrupt"]
+                    # Config.raise_on_escape = config["general"]["raise-on-escape"]
+                    # Config.raise_on_interrupt = config["general"]["raise-on-interrupt"]
                 except yaml.YAMLError as exc:
                     print(exc)
         except FileNotFoundError:
@@ -222,6 +222,10 @@ class CLIUtils:
 
         return gum_input_output
 
+    """
+    TODO: Decide if this should be generated, or provided by the package on onset
+    """
+
     def init_input(self, header, placeholder=None):
         """Prompt the user to input a value and return the input."""
         if placeholder is None:
@@ -333,6 +337,7 @@ class CLIUtils:
         except subprocess.CalledProcessError as e:
             if e.returncode == 130:
                 self.console.print("Aborted!", style=color)
+                sys.exit(1)
             if force_exit:
                 sys.exit(1)
             else:

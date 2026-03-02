@@ -2,8 +2,10 @@ import subprocess
 from pathlib import Path
 import click # type: ignore
 from cliutils.tools.cliutils_tools import CLIUtils
+from cliutils.tools.gum_prompts import GumPrompts
 
 utils = CLIUtils()
+prompts = GumPrompts()
 
 @click.command("commit")
 def commit():
@@ -26,8 +28,7 @@ def commit():
     files you'd like to add, you can press enter to continue. It will then ask you
     for a commit message and commit the changes.
     """
-    config = utils.load_config()
-    gum_confirm_output = utils.gum_confirm("Do you want to commit all changes?")
+    gum_confirm_output = prompts.gum_confirm("Do you want to commit all changes?")
     confirmation = gum_confirm_output
 
     if confirmation:
@@ -56,7 +57,7 @@ def commit():
         changed_files_list = changed_files_output.stdout.strip().split("\n")
         for file in changed_files_list:
             files += f"'{file.strip()}' "
-        tracked_files = utils.gum_filter(files, "Which File(s) Would You Like To Add?", False)
+        tracked_files = prompts.gum_filter(files, "Which File(s) Would You Like To Add?", False)
         tracked_files = [file[2:] for file in tracked_files.split("\n") if file]
         for file in tracked_files:
             tracked_files_for_commit += f"{file} "
