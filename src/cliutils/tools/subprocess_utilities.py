@@ -1,5 +1,6 @@
 import sys
 import subprocess
+from pathlib import Path
 from rich.console import Console
 from .config_manager import ConfigManager
 
@@ -9,6 +10,21 @@ class SubprocessUtilities:
         self.console = Console()
         self.config_manager = ConfigManager()
 
+    def run(self, cmd):
+        """Fire and forget a given shell command."""
+        try:
+            subprocess.run(
+                cmd,
+                shell=True,
+                check=True,
+                cwd=Path.cwd(),
+            )
+        except subprocess.CalledProcessError as e:
+            self.console.print(
+                f"Error running command: {e}",
+                style=self.config_manager.quaternary_color
+            )
+            raise
 
     def run_and_capture_output(self, cmd, store_exit_code=False):
         """Run a command and return the output."""
@@ -17,6 +33,7 @@ class SubprocessUtilities:
                 cmd,
                 shell=True,
                 check=True,
+                cwd=Path.cwd(),
                 stdout=subprocess.PIPE,
                 text=True
             )

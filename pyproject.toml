@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+ 
+[project]
+name = "cliutils"
+version = "0.1.1"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.1,<9.0",
+    "sqlparse>=0.4",
+    "beaupy>=3.7",
+    "rich>=13.0",
+    "pyyaml",
+    "requests",
+]
+
+[project.urls]
+Homepage = "https://github.com/CoreyGaunt/cli_utils"
+
+[project.scripts]
+cliutils = "cliutils.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.txt", "*.md"]
+
+### black
+
+[tool.black]
+line-length = 100
+skip-string-normalization = true
+
+
+### pylint
+
+[tool.pylint.main]
+disable = [
+    'duplicate-code',
+    'fixme',
+    'missing-class-docstring',
+    'missing-function-docstring',
+    'missing-module-docstring',
+    'pointless-string-statement',
+    'too-few-public-methods',
+    'too-many-arguments',
+    'import-error',
+]
+jobs = 0  # use all cores
+persistent = false
+reports = false
+score = false
+
+[tool.pylint.basic]
+good-names = [
+    '_',
+    'logger'
+]
+
+[tool.pylint.format]
+expected-line-ending = 'LF'
+max-line-length = 100
+
+[tool.pylint.similarities]
+ignore-imports = true
+
+[dependency-groups]
+dev = [
+    "black>=25.11.0",
+    "pylint>=3.3.8",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pyyaml>=6.0.3",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+filterwarnings = [
+    'ignore::DeprecationWarning',
+]
+
+[tool.pylint]
+extension-pkg-whitelist = [
+    'orjson'
+]

@@ -8,9 +8,14 @@ import click
 from cliutils.tools import (
     GumPrompts,
     ConfigManager,
+    SubprocessUtilities,
 )
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
+
+prompts = GumPrompts()
+config_manager = ConfigManager()
+subprocess_utils = SubprocessUtilities()
 
 @click.command("pr-create")
 @click.option('--ticket-only', '-to', is_flag=True, help="Create a pull request with only a ticket reference.")
@@ -28,96 +33,87 @@ def pr_create(ticket_only):
     the pull request title will be generated from the branch name.
     """
 
-    prompts = GumPrompts()
-    config_manager = ConfigManager()
+    _, branch_name = _pull_branch_name()
 
-    # Pull the git branch name from git and use it as a placeholder value
-    git_pr_default = _pull_branch_name()
-
-    if git_pr_default == "main":
+    if branch_name == "main":
         print("You are on the main branch. Please create a new branch and try again.")
         sys.exit()
 
-    team_tag = config_manager.config['general']['team-tag']
+    team_tag = config_manager.config["general"]["team-tag"]
+    ticket_reference, pr_header, cleaned_branch = _parse_ticket_from_branch(branch_name, team_tag)
 
-    # TODO: think about breaking out lines 37 - 45 into a function
-    ticket_match = re.search(rf"{team_tag}-(\d{{1,4}})", git_pr_default)
+    pr_title_default = _generate_pr_title_default(cleaned_branch)
+    pr_title = prompts.gum_input("What Do You Want To Name This PR?", pr_title_default)
+
+    pr_body_template = _resolve_template(ticket_only)
+    pr_body_with_ticket = pr_body_template.replace("replace_ticket_ref", ticket_reference)
+    pr_body = prompts.gum_write("What Did You Do?", pr_body_with_ticket)
+
+    _submit_pr(pr_header, pr_title, pr_body)
+
+
+def _parse_ticket_from_branch(branch_name: str, team_tag: str) -> tuple[str, str, str]:
+    """Extract ticket reference and clean branch name for PR title generation."""
+    ticket_pattern = rf"{team_tag}-(\d{{1,4}})"
+    ticket_match = re.search(ticket_pattern, branch_name)
+
     if ticket_match:
         ticket_reference = ticket_match.group(0)
-        pr_header = ticket_reference + ": "
-        base_cleaned_pr_default = re.sub(rf".*{team_tag}-(\d{{1,4}}-)", "", git_pr_default)
+        pr_header = f"{ticket_reference}: "
+        cleaned_branch = re.sub(rf".*{team_tag}-\d{{1,4}}-", "", branch_name)
     else:
-        base_cleaned_pr_default = git_pr_default
         ticket_reference = ""
         pr_header = ""
+        cleaned_branch = branch_name
 
-    cleaned_pr_default = _generate_pr_title_default(base_cleaned_pr_default)
-    pr_title = prompts.gum_input("What Do You Want To Name This PR?", cleaned_pr_default)
+    return ticket_reference, pr_header, cleaned_branch
 
-    # TODO: think about moving lines 51 - 59 into config manager
-    templates_path = ASSETS_PATH / "templates"
-    pull_request_templates_path = templates_path / "pull_requests"
 
-    if ticket_only:
-        template = "data_dbt_ticket_only.md"
-    else:
-        template = "data_dbt_verbose.md"
-    template_file = pull_request_templates_path / template
-    pr_body_from_env = template_file.read_text()
+def _resolve_template(ticket_only: bool) -> str:
+    """Load the appropriate PR body template."""
+    template_name = "data_dbt_ticket_only.md" if ticket_only else "data_dbt_verbose.md"
+    template_path = ASSETS_PATH / "templates" / "pull_requests" / template_name
+    return template_path.read_text()
 
-    # Parse template file and look for 'replace_ticket_ref' and replace with pr_ticket_reference
-    if pr_body_from_env.find("replace_ticket_ref") != -1:
-        pr_body_from_env = pr_body_from_env.replace("replace_ticket_ref", ticket_reference)
-    pr_body = prompts.gum_write("What Did You Do?", pr_body_from_env)
-    escaped_body = shlex.quote(pr_body) # TODO: look into shlex and see if it's necessary
-    # handle special characters in pr_body that would cause in error
 
-    # TODO: think about breaking the remainder of this code into a try loop function
+def _submit_pr(pr_header: str, pr_title: str, pr_body: str) -> None:
+    """Attempt to create a draft PR, falling back to a non-draft if needed."""
+    escaped_body = shlex.quote(pr_body)
+    full_title = f"{pr_header}{pr_title}"
+
     try:
-        cmd1 = f"gh pr create --title '{pr_header}{pr_title}' --body {escaped_body} --draft"
-        subprocess.run(cmd1, shell=True, cwd=Path.cwd(), check=True)
+        subprocess_utils.run(f"gh pr create --title '{full_title}' --body {escaped_body} --draft")
     except subprocess.CalledProcessError as error:
-        print(
-            f"Attempting to create pull request without --draft flag "
-            f"because of: {error}"
-        )
+        print(f"Attempting to create pull request without --draft flag because of: {error}")
         try:
-            cmd2 = f"gh pr create --title '{pr_header}{pr_title}' --body {escaped_body}"
-            subprocess.run(cmd2, shell=True, cwd=Path.cwd(), check=True)
+            subprocess_utils.run(f"gh pr create --title '{full_title}' --body {escaped_body}")
         except subprocess.CalledProcessError as err:
             print(f"Failed to create pull request because of: {err}")
             sys.exit()
 
-# TODO: can the following function be more granular? i.e. broken out into smaller functions?
-def _generate_pr_title_default(git_pr_default):
+
+def _generate_pr_title_default(branch_name: str) -> str:
+    """Convert a branch name into a human-readable PR title."""
     protected_keywords = ["data-", "infra-", "spike-"]
     prepositions = _load_prepositions()
-    keyword_search = re.search(rf"({'|'.join(protected_keywords)})", git_pr_default)
-    if keyword_search:
-        keyword_match = keyword_search.group(0)
-        pr_heading = keyword_match.replace("-", " - ")
-    else:
-        keyword_match = ""
-        pr_heading = ""
-    pr_title_body = git_pr_default.replace(keyword_match, "")
-    pr_title_body = pr_title_body.replace("-", " ")
 
-    pr_title_list = pr_title_body.split(" ")
-    words = [word.title() if word not in prepositions else word for word in pr_title_list]
-    pr_title = " ".join(words)
-    return pr_heading + pr_title
+    keyword_match = next(
+        (kw for kw in protected_keywords if kw in branch_name),
+        ""
+    )
+    pr_heading = keyword_match.replace("-", " - ") if keyword_match else ""
+    title_body = branch_name.replace(keyword_match, "").replace("-", " ")
 
-# TODO: think about moving this to the config manager
-def _load_prepositions():
+    words = [w.title() if w not in prepositions else w for w in title_body.split()]
+    return pr_heading + " ".join(words)
+
+
+def _load_prepositions() -> list[str]:
+    """Load the prepositions list used for PR title casing."""
     prepositions_file = ASSETS_PATH / "data" / "prepositions.json"
     with open(prepositions_file, "r", encoding="utf-8") as f:
-        prepositions = json.load(f)
-    return prepositions
+        return json.load(f)
 
-def _pull_branch_name():
-    return subprocess.run(
-        ["git", "branch", "--show-current"],
-        capture_output=True,
-        text=True,
-        check=True
-    ).stdout.strip()
+
+def _pull_branch_name() -> tuple[str, str]:
+    return subprocess_utils.run_and_capture_output("git branch --show-current")

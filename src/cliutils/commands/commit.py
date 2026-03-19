@@ -1,13 +1,13 @@
-import subprocess
-from pathlib import Path
 import click # type: ignore
 from cliutils.tools import (
     GumPrompts,
     ConfigManager,
+    SubprocessUtilities,
 )
 
 prompts = GumPrompts()
 config_manager = ConfigManager()
+subprocess_utils = SubprocessUtilities()
 
 @click.command("commit")
 def commit():
@@ -34,43 +34,39 @@ def commit():
     confirmation = gum_confirm_output
 
     if confirmation:
-        commit_type, commit_message = _generate_type_and_message()
-        cmd1 = "git add ."
-        cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
-        cmd3 = "git push"
+        git_add_all = "git add ."
+        subprocess_utils.run(git_add_all)
 
-        subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
-        subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
-        subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
+        commit_type, commit_message = _generate_type_and_message()
+        git_commit = f"git commit -m '{commit_type}: {commit_message}'"
+        git_push = "git push"
+
+        subprocess_utils.run(git_commit)
+        subprocess_utils.run(git_push)
 
     else:
         # list all files that have been changed
         files = ""
         tracked_files_for_commit = ""
         changed_files = "git --no-optional-locks status --short"
-        changed_files_output = subprocess.run(
-            changed_files,
-            shell=True,
-            check=True,
-            cwd=Path.cwd(),
-            stdout=subprocess.PIPE,
-            text=True
-        )
-        changed_files_list = changed_files_output.stdout.strip().split("\n")
+        _, changed_files_output = subprocess_utils.run_and_capture_output(changed_files)
+        changed_files_list = changed_files_output.split("\n")
         for file in changed_files_list:
             files += f"'{file.strip()}' "
         tracked_files = prompts.gum_filter(files, "Which File(s) Would You Like To Add?", False)
         tracked_files = [file[2:] for file in tracked_files.split("\n") if file]
         for file in tracked_files:
             tracked_files_for_commit += f"{file} "
-        cmd1 = f"git add {tracked_files_for_commit}"
-        commit_type, commit_message = _generate_type_and_message()
-        cmd2 = f"git commit -m '{commit_type}: {commit_message}'"
-        cmd3 = "git push"
 
-        subprocess.run(cmd1, shell=True, check=True, cwd=Path.cwd())
-        subprocess.run(cmd2, shell=True, check=True, cwd=Path.cwd())
-        subprocess.run(cmd3, shell=True, check=True, cwd=Path.cwd())
+        git_add_tracked = f"git add {tracked_files_for_commit}"
+        subprocess_utils.run(git_add_tracked)
+
+        commit_type, commit_message = _generate_type_and_message()
+        git_commit = f"git commit -m '{commit_type}: {commit_message}'"
+        git_push = "git push"
+
+        subprocess_utils.run(git_commit)
+        subprocess_utils.run(git_push)
 
 def _generate_type_and_message():
     """Prompt the user to select a commit type and message."""
